@@ -1,0 +1,25 @@
+{
+  "name": "fvnc",
+  "displayName": "Faf VN Chapter Syntax Highlight",
+  "description": "Faf VN Chapter Script",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "contributes": {
+    "languages": [{
+      "id": "fvnc",
+      "aliases": ["Faf VN Chapter Script Language", "fvnc"],
+      "extensions": [".fvnc"],
+      "configuration": "./language-configuration.json"
+    }],
+    "grammars": [{
+      "language": "fvnc",
+      "scopeName": "source.fvnc",
+      "path": "./syntaxes/fvnc.tmLanguage.json"
+    }]
+  }
+}

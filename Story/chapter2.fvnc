@@ -1,0 +1,12 @@
+|0|
+@BG(./Assets/BG/park.png)
+@CHARACTERS(Miku.normal, chara1; Kak.normal, chara2)
+
+[Kak]
+"Wait... why are we alone, in another setting all of a sudden ?"
+
+[Kak]
+"What's your name again ?"
+
+[Miku.sans]
+"AYO MA NAME'S MIKU brooooo"

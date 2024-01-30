@@ -1,0 +1,94 @@
+{
+	"colors": {
+		"sep-op.fvnc": "#fff"
+	},
+	"$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+	"name": "Faf VN Chapter Script",
+	"patterns": [
+		{
+			"include": "#keywords"
+		},
+		{
+			"include": "#strings"
+		},
+		{
+			"include": "#comments"
+		},
+		{
+			"include": "#characters"
+		},
+		{
+			"include": "#blocks"
+		},
+		{
+			"include": "#actions"
+		}
+	],
+	"repository": {
+		"keywords": {
+			"patterns": [{
+				"name": "keyword.control.fvnc",
+				"match": "\\b(if|while|for|return)\\b"
+			}]
+		},
+		"strings": {
+			"name": "string.quoted.double.fvnc",
+			"begin": "\"",
+			"end": "\"",
+			"patterns": [
+				{
+					"name": "constant.character.escape.fvnc",
+					"match": "\\\\."
+				}
+			]
+		},
+		"action-params": {
+			"name": "variable.name.fvnc",
+			"begin": "\\(",
+			"end": "\\)",
+			"patterns": [
+				{
+					"include": "#strings"
+				},
+				{
+					"include": "#sep-op"
+				}
+			]
+		},
+		"comments": {
+			"name": "comment.line.fvnc",
+			"begin": "#",
+			"end": "$"
+		},
+		"blocks": {
+			"name": "entity.name.tag.fvnc",
+			"begin": "\\|",
+			"end": "\\|"
+		},
+		"characters": {
+			"name": "entity.name.class.fvnc",
+			"begin": "\\[",
+			"end": "\\]",
+			"patterns": [
+				{
+					"include": "#strings"
+				}
+			]
+		},
+		"actions": {
+			"name": "keyword.control",
+			"begin": "@",
+			"end": "$",
+			"patterns": [
+				{
+					"include": "#action-params"
+				}
+			]
+		},
+		"sep-op": {
+			"name": "keyword.operator",
+			"match": "(=|,|;|:)"
+		}
+	},
+	"scopeName": "source.fvnc"
+}

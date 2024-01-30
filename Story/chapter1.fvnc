@@ -1,0 +1,55 @@
+|0|
+@BG(./Assets/BG/street.png)
+@CHARACTERS(Miku.sans, chara1; Jotaro.normal, chara2)
+
+[Miku]
+@enter_left
+"Hello !"
+"I'm the number 1 princess in the world !"
+"Seeeekaaaaaaidee ichiban ooohiiimeee saaamaaaaaaaaaaaaaaaaa !"
+
+[$]
+"Hello, I'm the Narrator."
+
+[Jotaro.reflexion]
+"Yare yare daze."
+"Ore no entiendo nani de qué shaberu !"
+@leave_right
+@CHOICE("Wait!" : 1A, interest=1; "Bye !" : 1B)
+
+
+|1A|
+# he's out of frame
+[Jotaro]
+"Follow me then."
+
+[Miku]
+"Sure thing !"
+@GOTO(2, fade)
+
+
+|1B|
+[Miku]
+"Oh... He might be able to help me. Huuuhhh.. Hey, wait !"
+
+[Jotaro]
+"Yare yare daze..."
+@GOTO(2, fade)
+
+
+|2|
+@BG(./Assets/BG/house.png)
+@CHARACTERS(Miku.normal, chara1; Jotaro.normal, chara2; Kak.normal, chara2b)
+
+[Jotaro]
+"Well, here we are."
+
+[Kak]
+"Jotaro, you brought someone with you ?"
+
+[Miku]
+"yo"
+
+[Jotaro]
+"Yeah."
+@CHAPTER(chapter2, 0, fade)
