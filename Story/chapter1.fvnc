@@ -15,7 +15,7 @@
 "Yare yare daze."
 "Ore no entiendo nani de qué shaberu !"
 @leave_right
-@CHOICE("Wait!" : 1A, interest=1; "Bye !" : 1B)
+@CHOICE("Wait!" : 1A, interest=1, test=2; "Bye !" : 1B)
 
 
 |1A|

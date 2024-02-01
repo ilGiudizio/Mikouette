@@ -40,6 +40,7 @@ class Scene():
     scriptBuffer = list() # Stores all the speaches in the current SBID
     script_index = int()
     choiceBuffer = []
+    vars = {}   # Stores all the variables
     lastCharaDrawnSpeech = pygame.surface.Surface
     
     
@@ -86,7 +87,6 @@ class Scene():
         if sbid == None:
             Scene.data = fparser.chapter[Scene.GOTO[0][0]]  # GOTO : [(SBID, Transition)]
         else:   #or when it's a CHOICE, the SBID of the choice
-            print(sbid)
             Scene.data = fparser.chapter[sbid]
         Scene.GOTO = Scene.data["GOTO"]        
         Scene.scriptBuffer = Scene.data["SCRIPT"]
@@ -111,6 +111,7 @@ class Scene():
             for i in range(option_count):
                 option = Scene.GOTO[i]
                 Scene.choiceBuffer.append(UIButton(option[1], option[0], option[2], pos=(0, option_spacing*i + SCREENSIZE[1] / len(Scene.GOTO))))    # <= choiceBuffer[Label] : (SBID, {vars})
+        print(f"Scene VARIABLES : {Scene.vars}")
     
     def cleanChoiceBuffer():
         for option in Scene.choiceBuffer:
@@ -129,6 +130,8 @@ class Scene():
                 Scene.characterBuffer[scriptLine.chara].say(scriptLine.line)
             case fparser.AbstractNarratorLine:
                 Scene.say(scriptLine.line)
+            case fparser.IfStatement:
+                Scene.testFor()
     
     def say(phrase : str):
         text_box = TextWrapper.render_text_list(TextWrapper.wrap_text(phrase, SAY_FONT, UI.boxCharaText.size[0]), SAY_FONT, COLOR["$Narrator"])
@@ -136,6 +139,25 @@ class Scene():
         textBuffer.append((narrator_name, UIBox.center(UI.boxCharaName, narrator_name)))    # (Surface, Rect)
         textBuffer.append((text_box, (180, 592)))   # (Surface, Rect)
         Scene.lastCharaDrawnSpeech = (text_box, (180, 592))
+    
+    def testFor():
+        ifStatement = Scene.scriptBuffer[Scene.script_index]
+        
+        print(ifStatement)
+        
+        valid = True
+        
+        if len(Scene.vars) == 0:
+            Scene.script_index += 1
+        else:
+            for key in ifStatement.vars.keys():
+                if key in Scene.vars.keys():
+                    if ifStatement.vars[key] != Scene.vars[key]:
+                        valid = False
+            if valid:
+                    Scene.nextStoryBlock(ifStatement.goto)
+            else:
+                Scene.script_index += 1
     
     def loadCharacters():
         previousCharaList = Scene.characterBuffer.keys()
@@ -154,7 +176,7 @@ class Scene():
                 tmpCharacterBuffer[chara[0]].set_pos(POSITION[chara[2]])
             else:   # Otherwise, creat a new Chara Object
                 tmpCharacterBuffer[chara[0]] = Chara(chara[0], POSITION[chara[2]], COLOR[chara[0]], chara[1])
-            print(f"{chara[0]}.{chara[1]}")
+            print(f"CHARA {chara[0]}.{chara[1]} loaded")
         
         Scene.characterBuffer = tmpCharacterBuffer
         
@@ -240,6 +262,8 @@ class UIButton(UIBox):
         if self.rect.collidepoint(mousePos):
             for event in eventList:
                 if event.type == pygame.MOUSEBUTTONUP and event.button == 1:
+                    for key, value in self.vars.items():
+                        Scene.vars[key] = value
                     Scene.nextStoryBlock(self.sbid)
                     Scene.cleanChoiceBuffer()
     

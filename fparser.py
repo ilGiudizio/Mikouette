@@ -62,6 +62,17 @@ class AbstractCharaLine():
     def __str__(self) -> str:
         return f"{self.chara} : *{self.expression}* {self.line}"
 
+class IfStatement():
+    vars = dict()
+    goto = str()
+    
+    def __init__(self, vars : dict, goto : str) -> None:
+        self.vars = vars
+        self.goto = goto
+    
+    def __str__(self) -> str:
+        return f"If {self.vars} : GOTO({self.goto})"
+
 class Parser():
     data = str()
     
@@ -94,14 +105,14 @@ class Parser():
             tmpActBlock = block.split("\n\n")
             for ab in tmpActBlock:
                 tmpLines = ab.split("\n")
-                for line in tmpLines:
-                    line = line.strip(" ")
+                for li in range(len(tmpLines)):
+                    tmpLines[li] = tmpLines[li].strip(" ")
                     
-                    match line[0]:
+                    match tmpLines[li][0]:
                         case "|":   # Skip the SBID
                             continue 
                         case "@":   # Action
-                            tmpLineSplit = line.split("(")  # Skips the first character of the first part
+                            tmpLineSplit = tmpLines[li].split("(")  # Skips the first character of the first part
                             tmpLineSplit[0] = tmpLineSplit[0][1:]
                             if len(tmpLineSplit) !=1 :
                                 match tmpLineSplit[0]:
@@ -118,6 +129,14 @@ class Parser():
                                     case "GOTO":
                                         tmpGOTO = tmpLineSplit[1][:-1].split(",")
                                         chapter[tmpSBID]["GOTO"].append((tmpGOTO[0].strip(" "), tmpGOTO[1].strip(" ")))   # <= (SBID, transition)
+                                    case "IF":
+                                        tmpIF = tmpLineSplit[1][:-1].split(";")
+                                        tmpIFParams = tmpIF[0].split(",")
+                                        tmpIFVars = {}
+                                        for testVar in tmpIFParams:
+                                            tmpCondition = testVar.split("==")
+                                            tmpIFVars[tmpCondition[0].strip(" ")] = tmpCondition[1].strip(" ")
+                                        tmpSBScript.append(IfStatement(tmpIFVars, tmpIF[1].strip(" ")))   # <= ({variable : value}, SBID)
                                     case "CHAPTER":
                                         tmpCHAPTER = tmpLineSplit[1][:-1].split(",")
                                         chapter[tmpSBID]["NEXT"] = (tmpCHAPTER[0].strip(" "), tmpCHAPTER[1].strip(" "), tmpCHAPTER[2].strip(" "))   # <= (Chapter, SBID, transition)
@@ -128,8 +147,8 @@ class Parser():
                                             tmpOLabel = option[0].strip(" ")
                                             tmpOParams = option[1].split(",")
                                             tmpOGOTO = tmpOParams.pop(0).strip(" ")
+                                            tmpOVar = {}
                                             if len(tmpOParams) != 0:    # aka if there are variables to assign
-                                                tmpOVar = {}
                                                 for param in tmpOParams:
                                                     param = param.split("=")
                                                     tmpOVar[param[0].strip(" ")] = param[1].strip(" ")
@@ -140,7 +159,7 @@ class Parser():
                                 tmpSBScript.append(AbstractCharaAction(tmpChara, tmpExpression[tmpChara], "@" + tmpLineSplit[0]))
                             
                         case "[":   # Character
-                            tmpCharaSprite = line[1:-1].split(".")
+                            tmpCharaSprite = tmpLines[li][1:-1].split(".")
                             if len(tmpCharaSprite) > 1: # aka if you change expression
                                 tmpChara = tmpCharaSprite[0]
                                 tmpExpression[tmpCharaSprite[0]] = tmpCharaSprite[1]    # updates the expression
@@ -148,9 +167,9 @@ class Parser():
                             
                         case "\"":  # Speech Line
                             if tmpChara[0] == "$":  # In case it's the Narrator
-                                tmpSBScript.append(AbstractNarratorLine(line[1:-1])) # line[1:-1] because the Narrator doesn't speak with ""
+                                tmpSBScript.append(AbstractNarratorLine(tmpLines[li][1:-1])) # tmpLines[li][1:-1] because the Narrator doesn't speak with ""
                             else:
-                                tmpSBScript.append(AbstractCharaLine(tmpChara, tmpExpression[tmpChara], line))
+                                tmpSBScript.append(AbstractCharaLine(tmpChara, tmpExpression[tmpChara], tmpLines[li]))
                         case "#":   # Comment
                             continue
             
