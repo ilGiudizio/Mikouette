@@ -54,6 +54,7 @@ class Scene():
     
     paused = False  # Pauses the scene when there's a choice for example
     appreciating = False    # Whether or not the user is in appreciation mode
+    inMenu = False  # Whether or not the user is in a menu
     
     def load(chapter : str, SBID = "0", script_index = 0):
         Scene.script_index = script_index  # DO NOT REMOVE (it also resets it when changing Chapters)
@@ -87,7 +88,7 @@ class Scene():
     
     def appreciationMode():
         """Hides the UI and pauses the game to appreciate the artworks"""
-        if Scene.paused:
+        if Scene.appreciating:
             Scene.paused = False
             Scene.appreciating = False
         else:
