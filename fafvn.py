@@ -30,9 +30,50 @@ charaZBuffer = list()   # Stores a reference to what's drawn, in which order
 uiZBuffer = list()
 textBuffer = list() # Stores every text drawn on screen
 
+class BG():
+    sprite = pygame.Surface
+    rect = pygame.Rect
+    preParallaxPos = pygame.math.Vector2
+    pos = pygame.math.Vector2
+    size = 1.0
+    rot = 0.0
+
+    def __init__(self, sprite : str, initPos = (0, 0)) -> None:
+        self.sprite = pygame.transform.rotozoom(sprite, self.rot, self.size)
+        self.pos = pygame.math.Vector2(initPos[0], initPos[1])
+        self.preParallaxPos = self.pos
+        self.rect = self.set_rect()
+    
+    def update(self):
+        window.blit(self.sprite, self.pos)
+        #print(f"{self.name} || Pre : {self.preParallaxPos} | Post {self.pos}")
+        self.pos = self.preParallaxPos
+    
+    def apply_parallax(self, dx : float, dy : float):
+        self.pos = self.preParallaxPos + pygame.Vector2(dx, dy)
+        self.rect = round(self.pos.x), round(self.pos.y)
+    
+    def set_rect(self):
+        self.rect = self.sprite.get_rect()
+        self.rect.topleft = round(self.pos.x), round(self.pos.y)
+    
+    def set_pos(self, x : float, y : float):
+        self.pos = pygame.math.Vector2(x, y)
+        self.preParallaxPos = self.pos
+        self.set_rect()
+    
+    def set_pos(self, pos : tuple):
+        self.pos = pygame.math.Vector2(pos[0], pos[1])
+        self.preParallaxPos = self.pos
+        self.set_rect()
+    
+    def move(self, dx : float, dy : float):
+        self.pos += pygame.Vector2(dx, dy)
+        self.rect = round(self.pos.x), round(self.pos.y)
+
 class Scene():
     cg = None
-    bg = None
+    bg = BG
     data = dict()
     GOTO = list()   # Where to go next
     SBID = "0"    # Stores the current Story Block ID
@@ -69,8 +110,8 @@ class Scene():
         Scene.scriptBuffer = Scene.data["SCRIPT"]
         Scene.loadCharacters()
         
-        Scene.bg = pygame.image.load(Scene.data["BG"]).convert()
-        window.blit(Scene.bg, (0, 0))
+        Scene.bg = BG(pygame.image.load(Scene.data["BG"]).convert()) 
+        Scene.bg.update()
     
     def advance():
         if not Scene.isDoneWriting: # If it's not done writing but you want to advance, it'll write everything
@@ -112,8 +153,8 @@ class Scene():
         if len(Scene.data["CHARACTERS"]) != 0:  # If the Character List changed
             Scene.loadCharacters()
         
-        Scene.bg = pygame.image.load(Scene.data["BG"]).convert()
-        window.blit(Scene.bg, (0, 0))
+        Scene.bg.sprite = pygame.image.load(Scene.data["BG"]).convert()
+        Scene.bg.update()
     
     def choice():
         Scene.paused = True
@@ -221,7 +262,7 @@ class Scene():
 
     def parallaxEffect():
         max_offsetX = 10
-        max_offsetY = 5
+        max_offsetY = 2
         screen_center = SCREEN_RECT.center
 
         mouse_pos = pygame.mouse.get_pos()
@@ -230,6 +271,8 @@ class Scene():
         #print(f"{(mouse_pos[0] - screen_center[0]) * max_offset / screen_center[0]}, {(mouse_pos[1] - screen_center[1]) * max_offset / screen_center[1]}")
 
         # BG PARALLAX
+        # Disabled because there are artifacts, even when resizing the image.
+        # Scene.bg.apply_parallax(((screen_center[0] - mouse_pos[0]) * max_offsetX / screen_center[0])/(len(charaZBuffer)+1),((screen_center[1] - mouse_pos[1]) * max_offsetY / screen_center[1])/(len(charaZBuffer)+1))
 
     def checkCollisions():
         if len(Scene.choiceBuffer) != 0:
@@ -237,17 +280,15 @@ class Scene():
                 button.isClicked()
     def update():     
         # The background is always drawn first
-        window.blit(Scene.bg, (0, 0))
+        Scene.bg.update()
         
         if Scene.EnableParallax:
             Scene.parallaxEffect()
 
-        # Then the characters
-        for chara in charaZBuffer:
-            chara.update()
+        # Then the characters (The first of the list is drawn last)
+        for i in range(len(charaZBuffer)-1, -1, -1):
+            charaZBuffer[i].update()
             #window.blit(chara.sprite, chara.pos)
-        
-        print(charaZBuffer)
         
         # Then the CG if there are any
         if Scene.cg != None:
@@ -379,47 +420,6 @@ class UIElement():
     def move(self, dx : int, dy : int):
         self.pos = self.pos.move(dx, dy)
 
-class BG():
-    sprite = pygame.Surface
-    rect = pygame.Rect
-    preParallaxPos = pygame.math.Vector2
-    pos = pygame.math.Vector2
-    size = 1.0
-    rot = 0.0
-
-    def __init__(self, path : str, initPos = (0, 0)) -> None:
-        self.sprite = pygame.image.load(path).convert()
-        self.pos = pygame.math.Vector2(initPos[0], initPos[1])
-        self.preParallaxPos = self.pos
-        self.rect = self.set_rect()
-    
-    def update(self):
-        window.blit(self.sprite, self.pos)
-        #print(f"{self.name} || Pre : {self.preParallaxPos} | Post {self.pos}")
-        self.pos = self.preParallaxPos
-    
-    def apply_parallax(self, dx : float, dy : float):
-        self.pos = self.preParallaxPos + pygame.Vector2(dx, dy)
-        self.rect = round(self.pos.x), round(self.pos.y)
-    
-    def set_rect(self):
-        self.rect = self.sprite.get_rect()
-        self.rect.topleft = round(self.pos.x), round(self.pos.y)
-    
-    def set_pos(self, x : float, y : float):
-        self.pos = pygame.math.Vector2(x, y)
-        self.preParallaxPos = self.pos
-        self.set_rect()
-    
-    def set_pos(self, pos : tuple):
-        self.pos = pygame.math.Vector2(pos[0], pos[1])
-        self.preParallaxPos = self.pos
-        self.set_rect()
-    
-    def move(self, dx : float, dy : float):
-        self.pos += pygame.Vector2(dx, dy)
-        self.rect = round(self.pos.x), round(self.pos.y)
-
 class Chara():
     count = 0
     charaFolder = "./Assets/Chara/"
@@ -479,6 +479,9 @@ class Chara():
         self.rect = round(self.pos.x), round(self.pos.y)
     
     def say(self, phrase : str):
+        # The character that is currently speaking is drawn over everyone else, so, since we read the buffer backwards, we put the speaking character 1st in the list
+        charaZBuffer.insert(0, charaZBuffer.pop(charaZBuffer.index(self)))
+
         text_box = TextWrapper.render_text_list(TextWrapper.wrap_text(phrase, SAY_FONT, UI.boxCharaText.size[0]), SAY_FONT, self.color)
         chara_name = NAME_FONT.render(self.name, True, self.color)
         textBuffer.append((chara_name, UIBox.center(UI.boxCharaName, chara_name)))    # (Surface, Rect)
