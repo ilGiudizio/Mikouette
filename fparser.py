@@ -8,8 +8,9 @@ chapter = dict()    # chapter[StoryBlockID] = StoryBlock
         "CHARACTERS": ((Chara1, expression, startPos), (Chara2, expression, startPos)),
         "SCRIPT": (
             (Chara1, expression, "@CharacterAction"),
-            (Chara1, expression, "Hello")
-            ($Narrator, The Narrator doesn't speak in quotes)
+            (Chara1, expression, "Hello"),
+            ($Narrator, The Narrator doesn't speak in quotes),
+            CG : path
         ),
         "GOTO": [
             (SBID, Transition) OR , (SBID, Label, {vars})
@@ -28,6 +29,12 @@ class StoryBlock():
         self.bg = bg
         self.chara = chara
         self.script = script
+
+class AbstractCG():
+    path = str()
+    
+    def __init__(self, path : str) -> None:
+        self.path = path
 
 class AbstractNarratorLine():
     chara = "Narrator"
@@ -118,6 +125,8 @@ class Parser():
                                 match tmpLineSplit[0]:
                                     case "BG":
                                         tmpBG = tmpLineSplit[1][:-1]    # Takes everything except for the ) at the end
+                                    case "CG":
+                                        tmpSBScript.append(AbstractCG(tmpLineSplit[1][:-1]))    # Takes everything except for the ) at the end
                                     case "CHARACTERS":
                                         tmpCharaArgs = tmpLineSplit[1][:-1].split(";")  # Separates the Characters
                                         for charaArg in tmpCharaArgs:

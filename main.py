@@ -24,11 +24,16 @@ while keepRunning:
         if event.type == QUIT:
             keepRunning = False
         if fafvn.Scene.paused == False:
-            if event.type == pygame.MOUSEBUTTONUP and event.button == 1:
+            if event.type == pygame.MOUSEBUTTONUP and event.button == 1:    # LEFT CLICK
                 fafvn.Scene.advance()                    
             if event.type == pygame.KEYUP:
                 if event.key == pygame.K_SPACE:
                     fafvn.Scene.advance()
+        if event.type == pygame.MOUSEBUTTONUP and event.button == 2:    # MIDDLE CLICK
+                fafvn.Scene.appreciationMode()
+                print("MIDDLE CLICK")
+        if event.type == pygame.MOUSEBUTTONUP and event.button == 3:    # RIGHT CLICK
+            print("RIGHT CLICK")
 
     fafvn.Scene.checkCollisions()
     fafvn.Scene.update()

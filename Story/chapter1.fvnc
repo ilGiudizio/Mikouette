@@ -11,6 +11,11 @@
 [$]
 "Hello, chien (eh mais c'est pas très gentil ça Diane)"
 
+@CG(./Assets/CG/TestCG1.png)
+
+[$]
+"Ah ouais stylé Persona 5"
+
 [Jotaro.reflexion]
 "Yare yare daze."
 "Ore no entiendo nani de qué shaberu !"

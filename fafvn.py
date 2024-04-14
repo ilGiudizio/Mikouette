@@ -31,12 +31,15 @@ uiZBuffer = list()
 textBuffer = list() # Stores every text drawn on screen
 
 class Scene():
+    cg = None
     bg = None
     data = dict()
     GOTO = list()   # Where to go next
     SBID = "0"    # Stores the current Story Block ID
     CHARACTERS = tuple()
     characterBuffer = dict()    # Stores the current characters
+    previousBGwasCG = False   # Stores a bool that indicates if the previous BG was CG
+    currentScriptLineType = None
     scriptBuffer = list() # Stores all the speaches in the current SBID
     script_index = int()
     choiceBuffer = []
@@ -50,6 +53,7 @@ class Scene():
     skipWriting = False
     
     paused = False  # Pauses the scene when there's a choice for example
+    appreciating = False    # Whether or not the user is in appreciation mode
     
     def load(chapter : str, SBID = "0", script_index = 0):
         Scene.script_index = script_index  # DO NOT REMOVE (it also resets it when changing Chapters)
@@ -80,6 +84,15 @@ class Scene():
                         Scene.choice()
                     else:   # Otherwise, we just read the next Story Block
                         Scene.nextStoryBlock()
+    
+    def appreciationMode():
+        """Hides the UI and pauses the game to appreciate the artworks"""
+        if Scene.paused:
+            Scene.paused = False
+            Scene.appreciating = False
+        else:
+            Scene.appreciating = True
+            Scene.paused = True
     
     def nextStoryBlock(sbid = None):
         Scene.paused = False
@@ -120,6 +133,11 @@ class Scene():
     
     def readScript():
         scriptLine = Scene.scriptBuffer[Scene.script_index]
+
+        Scene.currentScriptLineType = type(scriptLine)
+
+        if Scene.currentScriptLineType not in [fparser.AbstractNarratorLine, fparser.AbstractCG, fparser.IfStatement]: # If the the current line type isn't one of them, unload the CG.
+            Scene.unloadCG()
         
         match type(scriptLine):
             case fparser.AbstractCharaAction:
@@ -130,6 +148,8 @@ class Scene():
                 Scene.characterBuffer[scriptLine.chara].say(scriptLine.line)
             case fparser.AbstractNarratorLine:
                 Scene.say(scriptLine.line)
+            case fparser.AbstractCG:
+                Scene.loadCG(scriptLine.path)
             case fparser.IfStatement:
                 Scene.testFor()
     
@@ -139,6 +159,18 @@ class Scene():
         textBuffer.append((narrator_name, UIBox.center(UI.boxCharaName, narrator_name)))    # (Surface, Rect)
         textBuffer.append((text_box, (180, 592)))   # (Surface, Rect)
         Scene.lastCharaDrawnSpeech = (text_box, (180, 592))
+    
+    def sayCG(phrase : str):
+        text_box = TextWrapper.render_text_list(TextWrapper.wrap_text(phrase, SAY_FONT, UI.boxCharaText.size[0]), SAY_FONT, COLOR["$Narrator"])
+        textBuffer.append((text_box, (180, 592)))   # (Surface, Rect)
+        Scene.lastCharaDrawnSpeech = (text_box, (180, 592))
+    
+    def loadCG(path : str):
+        Scene.cg = pygame.image.load(path).convert()
+        Scene.sayCG("...")
+    
+    def unloadCG() -> None:
+        Scene.cg = None
     
     def testFor():
         ifStatement = Scene.scriptBuffer[Scene.script_index]
@@ -194,11 +226,15 @@ class Scene():
         for chara in charaZBuffer:
             window.blit(chara.sprite, chara.pos)
         
+        # Then the CG if there are any
+        if Scene.cg != None:
+            window.blit(Scene.cg, (0, 0))
+
         # Then the UI
         if not Scene.paused:
             Scene.readScript()
+            Scene.previousScriptLineType = type(Scene.scriptBuffer[Scene.script_index])
         UI.update()
-
 
 class UIBox():
     name = str()
@@ -281,24 +317,28 @@ class UI():
     boxCharaText = UIBox("BoxCharaText", (920, 86), (0, 590), centered=1)
     
     def update():
-        # Ui is always drawn last, but before text
-        if len(Scene.choiceBuffer) != 0:    # Handled outside of the uiZBuffer for convenience
-            for button in Scene.choiceBuffer:
-                button.update()
-        
-        for elt in uiZBuffer:
-            elt.update()
+        # If the user isn't in appreciation mode, draw the UI
+        if not Scene.appreciating:
+            # Ui is always drawn last, but we draw buttons before text
+            if len(Scene.choiceBuffer) != 0:    # Handled outside of the uiZBuffer for convenience
+                for button in Scene.choiceBuffer:
+                    button.update()
             
-        # Then, text is drawn
-        for text in textBuffer:
-            window.blit(text[0], text[1]) # (RenderedText : Surface, Postion : Rect)
-            if not Scene.paused:    # You musn't remove if the scene is paused.
-                textBuffer.remove(text)
-        
-        # If Debug mode is on, draws the UI Debug Boxes
-        if UI.debug:
-            for key in uiDebug.keys():
-                window.blit(uiDebug[key].box, uiDebug[key].pos)
+            # If it's showing a CG, hide the CharaTextBox and other graphical elements
+            if Scene.currentScriptLineType != fparser.AbstractCG:
+                for elt in uiZBuffer:
+                    elt.update()
+                
+            # Then, text is drawn
+            for text in textBuffer:
+                window.blit(text[0], text[1]) # (RenderedText : Surface, Postion : Rect)
+                if not Scene.paused:    # You mustn't remove even when the scene is paused.
+                    textBuffer.remove(text)
+
+            # If Debug mode is on, draws the UI Debug Boxes
+            if UI.debug:
+                for key in uiDebug.keys():
+                    window.blit(uiDebug[key].box, uiDebug[key].pos)
         
 
 class UIElement():
