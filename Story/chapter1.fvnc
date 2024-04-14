@@ -6,7 +6,7 @@
 @enter_left
 "Hello !"
 "I'm the number 1 princess in the world !"
-"Seeeekaaaaaaidee ichiban ooohiiimeee saaamaaaaaaaaaaaaaaaaa !"
+"{0}Seeeekaaaaaaidee ichiban ooohiiimeee saaamaaaaaaaaaaaaaaaaa !"
 
 [$]
 "Hello, chien (eh mais c'est pas très gentil ça Diane)"
@@ -47,7 +47,7 @@
 @CHARACTERS(Miku.normal, chara1; Jotaro.normal, chara2; Kak.normal, chara2b)
 
 [Jotaro]
-"Well, here we are."
+"{0}Well, here we are."
 
 [Kak]
 "Jotaro, you brought someone with you ?"

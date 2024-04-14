@@ -78,7 +78,7 @@ class Scene():
     GOTO = list()   # Where to go next
     SBID = "0"    # Stores the current Story Block ID
     CHARACTERS = tuple()
-    characterBuffer = dict()    # Stores the current characters
+    characterBuffer = dict()    # Stores the current characters {Chara.name : Chara()}
     previousBGwasCG = False   # Stores a bool that indicates if the previous BG was CG
     currentScriptLineType = None
     scriptBuffer = list() # Stores all the speaches in the current SBID
@@ -86,11 +86,14 @@ class Scene():
     choiceBuffer = []
     vars = {}   # Stores all the variables
     lastCharaDrawnSpeech = pygame.surface.Surface
-    
-    
+
+    voicelines = {str : [pygame.mixer.Sound]} # Stores all the voicelines of this chapter
+     
     writeCounter = 0
     writingSpeed = 3
     isDoneWriting = False
+    hasAlreadyTalked = False
+    isDonePlayingSound = False
     skipWriting = False
     
     paused = False  # Pauses the scene when there's a choice for example
@@ -109,6 +112,7 @@ class Scene():
         Scene.GOTO = Scene.data["GOTO"]
         Scene.scriptBuffer = Scene.data["SCRIPT"]
         Scene.loadCharacters()
+        Scene.loadSounds(chapter)
         
         Scene.bg = BG(pygame.image.load(Scene.data["BG"]).convert()) 
         Scene.bg.update()
@@ -117,6 +121,8 @@ class Scene():
         if not Scene.isDoneWriting: # If it's not done writing but you want to advance, it'll write everything
             Scene.skipWriting = True
         else :
+            Scene.hasAlreadyTalked = False
+            Scene.isDonePlayingSound = False
             Scene.script_index += 1
             Scene.skipWriting = False
             Scene.isDoneWriting = False
@@ -188,10 +194,10 @@ class Scene():
         match type(scriptLine):
             case fparser.AbstractCharaAction:
                 Scene.characterBuffer[scriptLine.chara].set_expression(scriptLine.expression)
-                Scene.characterBuffer[scriptLine.chara].say(scriptLine.action)
+                Scene.characterBuffer[scriptLine.chara].say(scriptLine.action, -1)
             case fparser.AbstractCharaLine:
                 Scene.characterBuffer[scriptLine.chara].set_expression(scriptLine.expression)
-                Scene.characterBuffer[scriptLine.chara].say(scriptLine.line)
+                Scene.characterBuffer[scriptLine.chara].say(scriptLine.line, scriptLine.sfxID)
             case fparser.AbstractNarratorLine:
                 Scene.say(scriptLine.line)
             case fparser.AbstractCG:
@@ -236,7 +242,17 @@ class Scene():
                     Scene.nextStoryBlock(ifStatement.goto)
             else:
                 Scene.script_index += 1
+
+    def loadSounds(chapter : str):
+        for chara in Scene.characterBuffer:
+            if os.path.isdir(f"./Assets/Chara/{chara}/Voicelines/{chapter}"):
+                Scene.voicelines[chara] = [pygame.mixer.Sound(f"./Assets/Chara/{chara}/Voicelines/{chapter}/{voiceline}") for voiceline in os.listdir(f"./Assets/Chara/{chara}/Voicelines/{chapter}")]
     
+    def playSound(chara : str, sfxID : int):
+        Scene.voicelines[chara][sfxID].set_volume(0.7)
+        Scene.voicelines[chara][sfxID].play()
+        Scene.isDonePlayingSound = True
+
     def loadCharacters():
         previousCharaList = Scene.characterBuffer.keys()
         abstractCharacters = Scene.data["CHARACTERS"]
@@ -435,7 +451,7 @@ class Chara():
     
     def __init__(self, name : str, initPos = (80, 20), color = (255, 255, 255), expression = "normal") -> None:
         self.name = name
-        self.expression = {sprite.split('.')[0].split("_")[1] : pygame.transform.rotozoom(pygame.image.load(f"{self.charaFolder}{name}/{sprite}").convert_alpha(), self.rot, self.size) for sprite in os.listdir(self.charaFolder + name)}
+        self.expression = {sprite.split('.')[0].split("_")[1] : pygame.transform.rotozoom(pygame.image.load(f"{self.charaFolder}{name}/Sprites/{sprite}").convert_alpha(), self.rot, self.size) for sprite in os.listdir(f"{self.charaFolder}{name}/Sprites")}
         self.color = color
         self.sprite = self.expression[expression]
         self.pos = pygame.math.Vector2(initPos[0], initPos[1])
@@ -478,7 +494,7 @@ class Chara():
         self.pos += pygame.Vector2(dx, dy)
         self.rect = round(self.pos.x), round(self.pos.y)
     
-    def say(self, phrase : str):
+    def say(self, phrase : str, sfxID : int):
         # The character that is currently speaking is drawn over everyone else, so, since we read the buffer backwards, we put the speaking character 1st in the list
         charaZBuffer.insert(0, charaZBuffer.pop(charaZBuffer.index(self)))
 
@@ -487,6 +503,11 @@ class Chara():
         textBuffer.append((chara_name, UIBox.center(UI.boxCharaName, chara_name)))    # (Surface, Rect)
         textBuffer.append((text_box, (180, 592)))   # (Surface, Rect)
         Scene.lastCharaDrawnSpeech = (text_box, (180, 592))
+
+        if sfxID != -1: # If there's actually a sound to play
+            if not Scene.hasAlreadyTalked:  # Plays the sound only once
+                Scene.playSound(self.name, sfxID)
+                Scene.hasAlreadyTalked = True
     
     def free(self):
         charaZBuffer.remove(self)

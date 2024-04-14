@@ -2,6 +2,7 @@ import pygame
 from pygame.locals import *
 import fafvn
 
+pygame.mixer.pre_init(buffer=2048)
 pygame.init()
 
 TIMER = pygame.time.Clock()

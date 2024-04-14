@@ -9,6 +9,7 @@ chapter = dict()    # chapter[StoryBlockID] = StoryBlock
         "SCRIPT": (
             (Chara1, expression, "@CharacterAction"),
             (Chara1, expression, "Hello"),
+            (Chara2, expression, "Hello", {0}),
             ($Narrator, The Narrator doesn't speak in quotes),
             CG : path
         ),
@@ -57,17 +58,19 @@ class AbstractCharaLine():
     chara = str()
     expression = str()
     line = str()
+    sfxID = int
     
-    def __init__(self, chara : str, expression : str, line : str) -> None:
+    def __init__(self, chara : str, expression : str, line : str, sfxID : int) -> None:
         self.chara = chara
         self.expression = expression
         self.line = line
+        self.sfxID = sfxID
     
     def __repr__(self) -> str:
-        return f"{self.chara} : *{self.expression}* {self.line}"
+        return f"{self.chara} : *{self.expression}* {self.line} // SfxID {self.sfxID}"
     
     def __str__(self) -> str:
-        return f"{self.chara} : *{self.expression}* {self.line}"
+        return f"{self.chara} : *{self.expression}* {self.line} // SfxID {self.sfxID}"
 
 class IfStatement():
     vars = dict()
@@ -121,7 +124,7 @@ class Parser():
                         case "@":   # Action
                             tmpLineSplit = tmpLines[li].split("(")  # Skips the first character of the first part
                             tmpLineSplit[0] = tmpLineSplit[0][1:]
-                            if len(tmpLineSplit) !=1 :
+                            if len(tmpLineSplit) !=1 :  # If there's a parenthesis
                                 match tmpLineSplit[0]:
                                     case "BG":
                                         tmpBG = tmpLineSplit[1][:-1]    # Takes everything except for the ) at the end
@@ -178,7 +181,13 @@ class Parser():
                             if tmpChara[0] == "$":  # In case it's the Narrator
                                 tmpSBScript.append(AbstractNarratorLine(tmpLines[li][1:-1])) # tmpLines[li][1:-1] because the Narrator doesn't speak with ""
                             else:
-                                tmpSBScript.append(AbstractCharaLine(tmpChara, tmpExpression[tmpChara], tmpLines[li]))
+                                tmpSfxID = -1   # The line won't have a sound associated to it
+                                tmpCharaLine = tmpLines[li]
+                                if "}" in tmpLines[li]:
+                                    tmpCharaLineSfx = tmpLines[li][2:].split("}")
+                                    tmpSfxID = int(tmpCharaLineSfx[0])
+                                    tmpCharaLine = "\""+tmpCharaLineSfx[1]  # Restores the quotes, gone because of the split
+                                tmpSBScript.append(AbstractCharaLine(tmpChara, tmpExpression[tmpChara], tmpCharaLine, tmpSfxID))
                         case "#":   # Comment
                             continue
             
