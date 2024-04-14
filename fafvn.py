@@ -220,15 +220,16 @@ class Scene():
         print(f"Active Character Objects : {Chara.count}")
 
     def parallaxEffect():
-        max_offset = 10
+        max_offsetX = 10
+        max_offsetY = 5
         screen_center = SCREEN_RECT.center
 
         mouse_pos = pygame.mouse.get_pos()
         for i in range(1, len(charaZBuffer)+1):
-            charaZBuffer[i-1].apply_parallax(int(-1 * (mouse_pos[0] - screen_center[0]) * max_offset / screen_center[0]), int(-1 * (mouse_pos[1] - screen_center[1]) * max_offset / screen_center[1]))
-        #chara.pos.x = -1 * (mouse_pos[0] - screen_center[0]) * max_offset / screen_center[0]
-        #chara.pos.y = -1 * (mouse_pos[1] - screen_center[1]) * max_offset / screen_center[1]
+            charaZBuffer[i-1].apply_parallax(((screen_center[0] - mouse_pos[0]) * max_offsetX / screen_center[0])/i,((screen_center[1] - mouse_pos[1]) * max_offsetY / screen_center[1])/i)
         #print(f"{(mouse_pos[0] - screen_center[0]) * max_offset / screen_center[0]}, {(mouse_pos[1] - screen_center[1]) * max_offset / screen_center[1]}")
+
+        # BG PARALLAX
 
     def checkCollisions():
         if len(Scene.choiceBuffer) != 0:
@@ -378,14 +379,56 @@ class UIElement():
     def move(self, dx : int, dy : int):
         self.pos = self.pos.move(dx, dy)
 
+class BG():
+    sprite = pygame.Surface
+    rect = pygame.Rect
+    preParallaxPos = pygame.math.Vector2
+    pos = pygame.math.Vector2
+    size = 1.0
+    rot = 0.0
+
+    def __init__(self, path : str, initPos = (0, 0)) -> None:
+        self.sprite = pygame.image.load(path).convert()
+        self.pos = pygame.math.Vector2(initPos[0], initPos[1])
+        self.preParallaxPos = self.pos
+        self.rect = self.set_rect()
+    
+    def update(self):
+        window.blit(self.sprite, self.pos)
+        #print(f"{self.name} || Pre : {self.preParallaxPos} | Post {self.pos}")
+        self.pos = self.preParallaxPos
+    
+    def apply_parallax(self, dx : float, dy : float):
+        self.pos = self.preParallaxPos + pygame.Vector2(dx, dy)
+        self.rect = round(self.pos.x), round(self.pos.y)
+    
+    def set_rect(self):
+        self.rect = self.sprite.get_rect()
+        self.rect.topleft = round(self.pos.x), round(self.pos.y)
+    
+    def set_pos(self, x : float, y : float):
+        self.pos = pygame.math.Vector2(x, y)
+        self.preParallaxPos = self.pos
+        self.set_rect()
+    
+    def set_pos(self, pos : tuple):
+        self.pos = pygame.math.Vector2(pos[0], pos[1])
+        self.preParallaxPos = self.pos
+        self.set_rect()
+    
+    def move(self, dx : float, dy : float):
+        self.pos += pygame.Vector2(dx, dy)
+        self.rect = round(self.pos.x), round(self.pos.y)
+
 class Chara():
     count = 0
     charaFolder = "./Assets/Chara/"
     name = str()
     expression = dict()
     sprite = None
-    preParallaxPos = None
-    pos = None
+    preParallaxPos = pygame.math.Vector2
+    pos = pygame.math.Vector2
+    rect = pygame.Rect
     size = 0.2
     rot = 0.0
     color = tuple()
@@ -395,7 +438,9 @@ class Chara():
         self.expression = {sprite.split('.')[0].split("_")[1] : pygame.transform.rotozoom(pygame.image.load(f"{self.charaFolder}{name}/{sprite}").convert_alpha(), self.rot, self.size) for sprite in os.listdir(self.charaFolder + name)}
         self.color = color
         self.sprite = self.expression[expression]
-        self.set_pos(initPos)
+        self.pos = pygame.math.Vector2(initPos[0], initPos[1])
+        self.preParallaxPos = pygame.math.Vector2(initPos[0], initPos[1])
+        self.set_rect()
         
         charaZBuffer.append(self)        
         Chara.count += 1
@@ -405,20 +450,33 @@ class Chara():
     
     def update(self):
         window.blit(self.sprite, self.pos)
+        #print(f"{self.name} || Pre : {self.preParallaxPos} | Post {self.pos}")
         self.pos = self.preParallaxPos
     
-    def apply_parallax(self, dx : int, dy :int):
-        self.move(dx, dy)
+    def apply_parallax(self, dx : float, dy : float):
+        self.pos = self.preParallaxPos + pygame.Vector2(dx, dy)
+        self.rect = round(self.pos.x), round(self.pos.y)
     
     def set_expression(self, expression : str):
         self.sprite = self.expression[expression]
     
-    def set_pos(self, pos):
-        self.pos = self.sprite.get_rect().move(pos)
+    def set_pos(self, x : float, y : float):
+        self.pos = pygame.math.Vector2(x, y)
         self.preParallaxPos = self.pos
+        self.set_rect()
     
-    def move(self, dx : int, dy : int):
-        self.pos = self.pos.move(dx, dy)
+    def set_pos(self, pos : tuple):
+        self.pos = pygame.math.Vector2(pos[0], pos[1])
+        self.preParallaxPos = self.pos
+        self.set_rect()
+    
+    def set_rect(self):
+        self.rect = self.sprite.get_rect()
+        self.rect.center = round(self.pos.x), round(self.pos.y)
+    
+    def move(self, dx : float, dy : float):
+        self.pos += pygame.Vector2(dx, dy)
+        self.rect = round(self.pos.x), round(self.pos.y)
     
     def say(self, phrase : str):
         text_box = TextWrapper.render_text_list(TextWrapper.wrap_text(phrase, SAY_FONT, UI.boxCharaText.size[0]), SAY_FONT, self.color)
