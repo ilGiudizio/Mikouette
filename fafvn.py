@@ -26,7 +26,7 @@ eventList = list()  # Copy of pygame.event.get()
 
 uiDebug = dict()
 
-charaZBuffer = list()    # Stores a reference to what's drawn, in which order
+charaZBuffer = list()   # Stores a reference to what's drawn, in which order
 uiZBuffer = list()
 textBuffer = list() # Stores every text drawn on screen
 
@@ -55,6 +55,10 @@ class Scene():
     paused = False  # Pauses the scene when there's a choice for example
     appreciating = False    # Whether or not the user is in appreciation mode
     inMenu = False  # Whether or not the user is in a menu
+
+    # OPTIONS
+
+    EnableParallax = True
     
     def load(chapter : str, SBID = "0", script_index = 0):
         Scene.script_index = script_index  # DO NOT REMOVE (it also resets it when changing Chapters)
@@ -214,7 +218,18 @@ class Scene():
         Scene.characterBuffer = tmpCharacterBuffer
         
         print(f"Active Character Objects : {Chara.count}")
-    
+
+    def parallaxEffect():
+        max_offset = 10
+        screen_center = SCREEN_RECT.center
+
+        mouse_pos = pygame.mouse.get_pos()
+        for i in range(1, len(charaZBuffer)+1):
+            charaZBuffer[i-1].apply_parallax(int(-1 * (mouse_pos[0] - screen_center[0]) * max_offset / screen_center[0]), int(-1 * (mouse_pos[1] - screen_center[1]) * max_offset / screen_center[1]))
+        #chara.pos.x = -1 * (mouse_pos[0] - screen_center[0]) * max_offset / screen_center[0]
+        #chara.pos.y = -1 * (mouse_pos[1] - screen_center[1]) * max_offset / screen_center[1]
+        #print(f"{(mouse_pos[0] - screen_center[0]) * max_offset / screen_center[0]}, {(mouse_pos[1] - screen_center[1]) * max_offset / screen_center[1]}")
+
     def checkCollisions():
         if len(Scene.choiceBuffer) != 0:
             for button in Scene.choiceBuffer:
@@ -223,9 +238,15 @@ class Scene():
         # The background is always drawn first
         window.blit(Scene.bg, (0, 0))
         
+        if Scene.EnableParallax:
+            Scene.parallaxEffect()
+
         # Then the characters
         for chara in charaZBuffer:
-            window.blit(chara.sprite, chara.pos)
+            chara.update()
+            #window.blit(chara.sprite, chara.pos)
+        
+        print(charaZBuffer)
         
         # Then the CG if there are any
         if Scene.cg != None:
@@ -310,7 +331,6 @@ class UIButton(UIBox):
     def free(self):
         del self
         
-
 class UI():
     debug = False
     
@@ -339,8 +359,7 @@ class UI():
             # If Debug mode is on, draws the UI Debug Boxes
             if UI.debug:
                 for key in uiDebug.keys():
-                    window.blit(uiDebug[key].box, uiDebug[key].pos)
-        
+                    window.blit(uiDebug[key].box, uiDebug[key].pos)       
 
 class UIElement():
     sprite = None
@@ -365,6 +384,7 @@ class Chara():
     name = str()
     expression = dict()
     sprite = None
+    preParallaxPos = None
     pos = None
     size = 0.2
     rot = 0.0
@@ -385,13 +405,17 @@ class Chara():
     
     def update(self):
         window.blit(self.sprite, self.pos)
+        self.pos = self.preParallaxPos
+    
+    def apply_parallax(self, dx : int, dy :int):
+        self.move(dx, dy)
     
     def set_expression(self, expression : str):
         self.sprite = self.expression[expression]
-        self.update()
     
     def set_pos(self, pos):
         self.pos = self.sprite.get_rect().move(pos)
+        self.preParallaxPos = self.pos
     
     def move(self, dx : int, dy : int):
         self.pos = self.pos.move(dx, dy)
