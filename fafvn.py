@@ -88,12 +88,17 @@ class Scene():
     lastCharaDrawnSpeech = pygame.surface.Surface
 
     voicelines = {str : [pygame.mixer.Sound]} # Stores all the voicelines of this chapter
+    currentVoiceline = None
+
+    previousMusicPath = None
+    musicPath = None
      
     writeCounter = 0
     writingSpeed = 3
     isDoneWriting = False
     hasAlreadyTalked = False
-    isDonePlayingSound = False
+    #isDonePlayingSound = False
+    #isDonePlayingVoiceline = False
     skipWriting = False
     
     paused = False  # Pauses the scene when there's a choice for example
@@ -111,6 +116,17 @@ class Scene():
         Scene.data = fparser.chapter[SBID]
         Scene.GOTO = Scene.data["GOTO"]
         Scene.scriptBuffer = Scene.data["SCRIPT"]
+
+        # BGM
+        Scene.musicPath = Scene.data["MUSIC"]
+        if Scene.musicPath != Scene.previousMusicPath: # If music changes
+            # Updates music
+            pygame.mixer_music.load(Scene.musicPath)
+            if Scene.musicPath != "STOP":
+                    pygame.mixer_music.play()
+            else:
+                pygame.mixer_music.fadeout(10)
+
         Scene.loadCharacters()
         Scene.loadSounds(chapter)
         
@@ -121,8 +137,14 @@ class Scene():
         if not Scene.isDoneWriting: # If it's not done writing but you want to advance, it'll write everything
             Scene.skipWriting = True
         else :
+            if Scene.currentVoiceline != None:
+                Scene.currentVoiceline.stop()
+            Scene.currentVoiceline = None
             Scene.hasAlreadyTalked = False
-            Scene.isDonePlayingSound = False
+            #Scene.isDonePlayingSound = False
+
+            Scene.previousMusicPath = Scene.musicPath
+
             Scene.script_index += 1
             Scene.skipWriting = False
             Scene.isDoneWriting = False
@@ -130,6 +152,7 @@ class Scene():
             
             if Scene.script_index >= len(Scene.scriptBuffer):    # If we reach the end of the SBID
                 if "NEXT" in Scene.data.keys(): # If we reach the end of the Chapter
+                    Scene.voicelines.clear()
                     Scene.load(Scene.data["NEXT"][0], Scene.data["NEXT"][1])
                 else:   
                     if len(Scene.GOTO) != 1:    # aka if it's a CHOICE
@@ -158,6 +181,20 @@ class Scene():
         print(Scene.data["SCRIPT"])
         if len(Scene.data["CHARACTERS"]) != 0:  # If the Character List changed
             Scene.loadCharacters()
+        
+        # BGM
+        Scene.previousMusicPath = Scene.musicPath   # Updates the variables here too, not just in Scene.advance()
+        print(f"{Scene.previousMusicPath} //// {Scene.musicPath}")
+
+        Scene.musicPath = Scene.data["MUSIC"]
+        if Scene.musicPath != "STOP":
+            if Scene.musicPath != Scene.previousMusicPath: # If music changes
+                # Updates music
+                pygame.mixer_music.fadeout(1000)
+                pygame.mixer_music.load(Scene.musicPath)
+                pygame.mixer_music.play(-1)
+        else:
+            pygame.mixer_music.fadeout(3000)
         
         Scene.bg.sprite = pygame.image.load(Scene.data["BG"]).convert()
         Scene.bg.update()
@@ -251,7 +288,13 @@ class Scene():
     def playSound(chara : str, sfxID : int):
         Scene.voicelines[chara][sfxID].set_volume(0.7)
         Scene.voicelines[chara][sfxID].play()
-        Scene.isDonePlayingSound = True
+        #Scene.isDonePlayingSound = True
+    
+    def playVoiceline(chara : str, sfxID : int):
+        Scene.currentVoiceline = Scene.voicelines[chara][sfxID]
+        Scene.currentVoiceline.set_volume(0.7)
+        Scene.currentVoiceline.play()
+        #Scene.isDonePlayingVoiceline = True
 
     def loadCharacters():
         previousCharaList = Scene.characterBuffer.keys()
@@ -506,7 +549,7 @@ class Chara():
 
         if sfxID != -1: # If there's actually a sound to play
             if not Scene.hasAlreadyTalked:  # Plays the sound only once
-                Scene.playSound(self.name, sfxID)
+                Scene.playVoiceline(self.name, sfxID)
                 Scene.hasAlreadyTalked = True
     
     def free(self):

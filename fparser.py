@@ -96,9 +96,10 @@ class Parser():
         d = Parser.data
         
         tmpStoryBlocks = d.split("\n\n\n")
-        tmpBG = str()   #Stores the latest Background
-        tmpChara = str()    # Stores the current Character Name
+        tmpBG = str   #Stores the latest Background
+        tmpChara = str    # Stores the current Character Name
         tmpExpression = dict()  # Stores each Character's latest expression
+        tmpMusic = None
         
         for block in tmpStoryBlocks:
             tmpSBScript = []
@@ -130,6 +131,8 @@ class Parser():
                                         tmpBG = tmpLineSplit[1][:-1]    # Takes everything except for the ) at the end
                                     case "CG":
                                         tmpSBScript.append(AbstractCG(tmpLineSplit[1][:-1]))    # Takes everything except for the ) at the end
+                                    case "MUSIC":
+                                        tmpMusic = tmpLineSplit[1][:-1] # Takes everything except for the ) at the end
                                     case "CHARACTERS":
                                         tmpCharaArgs = tmpLineSplit[1][:-1].split(";")  # Separates the Characters
                                         for charaArg in tmpCharaArgs:
@@ -192,6 +195,7 @@ class Parser():
                             continue
             
             chapter[tmpSBID]["BG"] = tmpBG
+            chapter[tmpSBID]["MUSIC"] = tmpMusic
             chapter[tmpSBID]["CHARACTERS"] = tuple(tmpSBCharacters)
             chapter[tmpSBID]["SCRIPT"] = tuple(tmpSBScript)
                             

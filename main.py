@@ -4,6 +4,7 @@ import fafvn
 
 pygame.mixer.pre_init(buffer=2048)
 pygame.init()
+pygame.mixer_music.set_volume(0.4)
 
 TIMER = pygame.time.Clock()
 

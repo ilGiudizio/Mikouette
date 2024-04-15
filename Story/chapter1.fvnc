@@ -1,6 +1,7 @@
 |0|
 @BG(./Assets/BG/street.png)
 @CHARACTERS(Miku.sans, chara1; Jotaro.normal, chara2)
+@MUSIC(./Assets/BGM/Bad Apple!.mp3)
 
 [Miku]
 @enter_left
@@ -12,7 +13,7 @@
 "Hello, chien (eh mais c'est pas très gentil ça Diane)"
 
 @CG(./Assets/CG/TestCG1.png)
-
+# $ = Narrator
 [$]
 "Ah ouais stylé Persona 5"
 
@@ -34,6 +35,7 @@
 
 
 |1B|
+@MUSIC(./Assets/BGM/Divide My Heart - GGXrd.mp3)
 [Miku]
 "Oh... He might be able to help me. Huuuhhh.. Hey, wait !"
 
@@ -47,6 +49,7 @@
 @CHARACTERS(Miku.normal, chara1; Jotaro.normal, chara2; Kak.normal, chara2b)
 
 [Jotaro]
+@MUSIC(STOP)
 "{0}Well, here we are."
 
 [Kak]
