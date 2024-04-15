@@ -22,6 +22,8 @@ COLOR = dict()
 with open("./Assets/Chara/colors.json") as file:
     COLOR = json.load(file)
 
+BMG_BASE_VOLUME = 0.4
+
 eventList = list()  # Copy of pygame.event.get()
 
 uiDebug = dict()

@@ -1,7 +1,7 @@
 |0|
 @BG(./Assets/BG/street.png)
 @CHARACTERS(Miku.sans, chara1; Jotaro.normal, chara2)
-@MUSIC(./Assets/BGM/Bad Apple!.mp3)
+@MUSIC(Bad Apple!.mp3)
 
 [Miku]
 @enter_left
@@ -35,7 +35,7 @@
 
 
 |1B|
-@MUSIC(./Assets/BGM/Divide My Heart - GGXrd.mp3)
+@MUSIC(Divide My Heart - GGXrd.mp3)
 [Miku]
 "Oh... He might be able to help me. Huuuhhh.. Hey, wait !"
 

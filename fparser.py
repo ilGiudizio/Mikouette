@@ -132,7 +132,10 @@ class Parser():
                                     case "CG":
                                         tmpSBScript.append(AbstractCG(tmpLineSplit[1][:-1]))    # Takes everything except for the ) at the end
                                     case "MUSIC":
-                                        tmpMusic = tmpLineSplit[1][:-1] # Takes everything except for the ) at the end
+                                        if tmpLineSplit[1][:-1] == "STOP":
+                                            tmpMusic = "STOP"
+                                        else:
+                                            tmpMusic = f"./Assets/BGM/{tmpLineSplit[1][:-1]}" # Takes everything except for the ) at the end
                                     case "CHARACTERS":
                                         tmpCharaArgs = tmpLineSplit[1][:-1].split(";")  # Separates the Characters
                                         for charaArg in tmpCharaArgs:
