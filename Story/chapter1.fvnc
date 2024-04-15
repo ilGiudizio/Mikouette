@@ -5,9 +5,9 @@
 
 [Miku]
 @enter_left
-"Hello !"
-"I'm the number 1 princess in the world !"
-"{0}Seeeekaaaaaaidee ichiban ooohiiimeee saaamaaaaaaaaaaaaaaaaa !"
+"{0}Hello !"
+"{1}I'm the number 1 princess in the world !"
+"{2}Seeeekaaaaaaidee ichiban ooohiiimeee saaamaaaaaaaaaaaaaaaaa !"
 
 [$]
 "Hello, chien (eh mais c'est pas très gentil ça Diane)"

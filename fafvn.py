@@ -91,6 +91,7 @@ class Scene():
 
     voicelines = {str : [pygame.mixer.Sound]} # Stores all the voicelines of this chapter
     currentVoiceline = None
+    voicelineChannel = pygame.mixer.Channel # Stores the mixer channel of the current voiceline (to know if it's done playing)
 
     previousMusicPath = None
     musicPath = None
@@ -120,14 +121,7 @@ class Scene():
         Scene.scriptBuffer = Scene.data["SCRIPT"]
 
         # BGM
-        Scene.musicPath = Scene.data["MUSIC"]
-        if Scene.musicPath != Scene.previousMusicPath: # If music changes
-            # Updates music
-            pygame.mixer_music.load(Scene.musicPath)
-            if Scene.musicPath != "STOP":
-                    pygame.mixer_music.play()
-            else:
-                pygame.mixer_music.fadeout(10)
+        Scene.loadMusic(True)
 
         Scene.loadCharacters()
         Scene.loadSounds(chapter)
@@ -185,18 +179,7 @@ class Scene():
             Scene.loadCharacters()
         
         # BGM
-        Scene.previousMusicPath = Scene.musicPath   # Updates the variables here too, not just in Scene.advance()
-        print(f"{Scene.previousMusicPath} //// {Scene.musicPath}")
-
-        Scene.musicPath = Scene.data["MUSIC"]
-        if Scene.musicPath != "STOP":
-            if Scene.musicPath != Scene.previousMusicPath: # If music changes
-                # Updates music
-                pygame.mixer_music.fadeout(1000)
-                pygame.mixer_music.load(Scene.musicPath)
-                pygame.mixer_music.play(-1)
-        else:
-            pygame.mixer_music.fadeout(3000)
+        Scene.loadMusic()
         
         Scene.bg.sprite = pygame.image.load(Scene.data["BG"]).convert()
         Scene.bg.update()
@@ -260,6 +243,35 @@ class Scene():
         Scene.cg = pygame.image.load(path).convert()
         Scene.sayCG("...")
     
+    def loadMusic(loadFromChapter = False):
+        # BGM
+        Scene.previousMusicPath = Scene.musicPath   # Updates the variables here too, not just in Scene.advance()
+        print(f"{Scene.previousMusicPath} //// {Scene.musicPath}")
+
+        Scene.musicPath = Scene.data["MUSIC"]
+        
+        if loadFromChapter:
+            if Scene.musicPath != None:
+                if Scene.musicPath != "STOP":
+                    print(f"SCENE.MUSICPATH : {Scene.musicPath}")
+                    if Scene.musicPath != Scene.previousMusicPath: # If music changes
+                        # Updates music
+                        pygame.mixer_music.fadeout(1000)
+                        pygame.mixer_music.load(Scene.musicPath)
+                        pygame.mixer_music.play(-1)
+                else:
+                    pygame.mixer_music.fadeout(3000)
+        else:
+            if Scene.musicPath != "STOP":
+                print(f"SCENE.MUSICPATH : {Scene.musicPath}")
+                if Scene.musicPath != Scene.previousMusicPath: # If music changes
+                    # Updates music
+                    pygame.mixer_music.fadeout(1000)
+                    pygame.mixer_music.load(Scene.musicPath)
+                    pygame.mixer_music.play(-1)
+            else:
+                pygame.mixer_music.fadeout(3000)
+    
     def unloadCG() -> None:
         Scene.cg = None
     
@@ -295,7 +307,7 @@ class Scene():
     def playVoiceline(chara : str, sfxID : int):
         Scene.currentVoiceline = Scene.voicelines[chara][sfxID]
         Scene.currentVoiceline.set_volume(0.7)
-        Scene.currentVoiceline.play()
+        Scene.voicelineChannel = Scene.currentVoiceline.play()
         #Scene.isDonePlayingVoiceline = True
 
     def loadCharacters():
@@ -340,6 +352,12 @@ class Scene():
             for button in Scene.choiceBuffer:
                 button.isClicked()
     def update():     
+        ## AUDIO
+        if Scene.currentVoiceline != None:
+            if not Scene.voicelineChannel.get_busy():   # Checks if it's busy playing the voiceline or if it's done
+                pygame.mixer_music.set_volume(BMG_BASE_VOLUME)  # If it's done, revert the BGM volume
+
+        ## GRAPHICS
         # The background is always drawn first
         Scene.bg.update()
         
@@ -553,6 +571,9 @@ class Chara():
             if not Scene.hasAlreadyTalked:  # Plays the sound only once
                 Scene.playVoiceline(self.name, sfxID)
                 Scene.hasAlreadyTalked = True
+                pygame.mixer_music.set_volume(BMG_BASE_VOLUME * 0.5)
+        else:
+            pygame.mixer_music.set_volume(BMG_BASE_VOLUME)  # You also need this here, otherwise, if you skip and there's no voiceline, the music stays at half volume
     
     def free(self):
         charaZBuffer.remove(self)
