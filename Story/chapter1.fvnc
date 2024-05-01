@@ -15,7 +15,7 @@
 @CG(./Assets/CG/TestCG1.png)
 # $ = Narrator
 [$]
-"Ah ouais stylé Persona 5"
+"{0}Ah ouais stylé Persona 5"
 
 [Jotaro.reflexion]
 "Yare yare daze."

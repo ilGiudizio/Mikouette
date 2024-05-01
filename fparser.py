@@ -40,9 +40,11 @@ class AbstractCG():
 class AbstractNarratorLine():
     chara = "Narrator"
     line = str()
+    sfxID = int
     
-    def __init__(self, line : str) -> None:
+    def __init__(self, line : str, sfxID : int) -> None:
         self.line = line
+        self.sfxID = sfxID
 
 class AbstractCharaAction():
     chara = str()
@@ -185,7 +187,13 @@ class Parser():
                             
                         case "\"":  # Speech Line
                             if tmpChara[0] == "$":  # In case it's the Narrator
-                                tmpSBScript.append(AbstractNarratorLine(tmpLines[li][1:-1])) # tmpLines[li][1:-1] because the Narrator doesn't speak with ""
+                                tmpNarratorLine = tmpLines[li]
+                                tmpSfxID = -1   # The line won't have a sound associated to it
+                                if "}" in tmpLines[li]:
+                                    tmpLineSfx = tmpLines[li][2:-1].split("}")
+                                    tmpSfxID = int(tmpLineSfx[0])
+                                    tmpNarratorLine = tmpLineSfx[1]
+                                tmpSBScript.append(AbstractNarratorLine(tmpNarratorLine, tmpSfxID)) # tmpLines[li][1:-1] because the Narrator doesn't speak with ""
                             else:
                                 tmpSfxID = -1   # The line won't have a sound associated to it
                                 tmpCharaLine = tmpLines[li]

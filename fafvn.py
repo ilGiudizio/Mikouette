@@ -221,18 +221,26 @@ class Scene():
                 Scene.characterBuffer[scriptLine.chara].set_expression(scriptLine.expression)
                 Scene.characterBuffer[scriptLine.chara].say(scriptLine.line, scriptLine.sfxID)
             case fparser.AbstractNarratorLine:
-                Scene.say(scriptLine.line)
+                Scene.say(scriptLine.line, scriptLine.sfxID)
             case fparser.AbstractCG:
                 Scene.loadCG(scriptLine.path)
             case fparser.IfStatement:
                 Scene.testFor()
     
-    def say(phrase : str):
+    def say(phrase : str, sfxID : int):
         text_box = TextWrapper.render_text_list(TextWrapper.wrap_text(phrase, SAY_FONT, UI.boxCharaText.size[0]), SAY_FONT, COLOR["$Narrator"])
         narrator_name = NAME_FONT.render("Narrator", True, COLOR["$Narrator"])
         textBuffer.append((narrator_name, UIBox.center(UI.boxCharaName, narrator_name)))    # (Surface, Rect)
         textBuffer.append((text_box, (180, 592)))   # (Surface, Rect)
         Scene.lastCharaDrawnSpeech = (text_box, (180, 592))
+
+        if sfxID != -1: # If there's actually a sound to play
+            if not Scene.hasAlreadyTalked:  # Plays the sound only once
+                Scene.playVoiceline("$", sfxID)
+                Scene.hasAlreadyTalked = True
+                pygame.mixer_music.set_volume(BMG_BASE_VOLUME * 0.5)
+        else:
+            pygame.mixer_music.set_volume(BMG_BASE_VOLUME)  # You also need this here, otherwise, if you skip and there's no voiceline, the music stays at half volume
     
     def sayCG(phrase : str):
         text_box = TextWrapper.render_text_list(TextWrapper.wrap_text(phrase, SAY_FONT, UI.boxCharaText.size[0]), SAY_FONT, COLOR["$Narrator"])
@@ -295,6 +303,11 @@ class Scene():
                 Scene.script_index += 1
 
     def loadSounds(chapter : str):
+        # Narrator SFX
+        if os.path.isdir(f"./Assets/SFX/{chapter}"):
+            Scene.voicelines["$"] = [pygame.mixer.Sound(f"./Assets/SFX/{chapter}/{sfx}") for sfx in os.listdir(f"./Assets/SFX/{chapter}")]
+
+        # Character Voicelines
         for chara in Scene.characterBuffer:
             if os.path.isdir(f"./Assets/Chara/{chara}/Voicelines/{chapter}"):
                 Scene.voicelines[chara] = [pygame.mixer.Sound(f"./Assets/Chara/{chara}/Voicelines/{chapter}/{voiceline}") for voiceline in os.listdir(f"./Assets/Chara/{chara}/Voicelines/{chapter}")]
