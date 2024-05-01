@@ -8,6 +8,7 @@ pygame.mixer_music.set_volume(fafvn.BMG_BASE_VOLUME)
 
 TIMER = pygame.time.Clock()
 
+
 fafvn.NAME_FONT = pygame.font.SysFont("comicsansms", 35)
 fafvn.SAY_FONT = pygame.font.SysFont("comicsansms", 30)
 
@@ -36,6 +37,8 @@ while keepRunning:
                 print("MIDDLE CLICK")
         if event.type == pygame.MOUSEBUTTONUP and event.button == 3:    # RIGHT CLICK
             print("RIGHT CLICK")
+    
+    TIMER.tick(fafvn.FPS)
 
     fafvn.Scene.checkCollisions()
     fafvn.Scene.update()

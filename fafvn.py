@@ -3,8 +3,16 @@ import os
 import os.path
 import json
 import fparser
+import math
+from pygame.math import lerp
+
+## FUNCTIONS
+def vector_lerp(a : pygame.math.Vector2, b: pygame.math.Vector2, weight : float):
+    return pygame.math.Vector2(lerp(a.x, b.x, weight), lerp(a.y, b.y, weight))
 
 #print(pygame.font.get_fonts())
+
+FPS = 60
 
 SCREENSIZE = (1280, 720)
 pygame.display.set_caption("Faf VN Framework")
@@ -17,6 +25,8 @@ SAY_FONT = pygame.font.Font
 POSITION = dict()
 with open("./Params/positions.json") as file:
     POSITION = json.load(file)
+for key in POSITION:
+    POSITION[key] = pygame.math.Vector2(POSITION[key][0], POSITION[key][1])
 
 COLOR = dict()
 with open("./Assets/Chara/colors.json") as file:
@@ -95,9 +105,14 @@ class Scene():
 
     previousMusicPath = None
     musicPath = None
+
+    actionDuration = 3    # in seconds
+    isCharaActionDone = False
+    lerpWeight = 0.0
+    lerpWeightIncrement = 1 / (actionDuration * FPS)
      
     writeCounter = 0
-    writingSpeed = 3
+    writingSpeed = 1    # Lower = Faster
     isDoneWriting = False
     hasAlreadyTalked = False
     #isDonePlayingSound = False
@@ -132,6 +147,7 @@ class Scene():
     def advance():
         if not Scene.isDoneWriting: # If it's not done writing but you want to advance, it'll write everything
             Scene.skipWriting = True
+            Scene.lerpWeight = 1.0
         else :
             if Scene.currentVoiceline != None:
                 Scene.currentVoiceline.stop()
@@ -140,6 +156,13 @@ class Scene():
             #Scene.isDonePlayingSound = False
 
             Scene.previousMusicPath = Scene.musicPath
+
+            # If it's not done playing the animation when advancing, skips the animation.
+            if type(Scene.scriptBuffer[Scene.script_index]) == fparser.AbstractCharaAction:
+                Scene.characterBuffer[Scene.scriptBuffer[Scene.script_index].chara].action(Scene.scriptBuffer[Scene.script_index].action, 1.0)
+
+            Scene.lerpWeight = 0.0
+            Scene.isCharaActionDone = False
 
             Scene.script_index += 1
             Scene.skipWriting = False
@@ -217,6 +240,13 @@ class Scene():
             case fparser.AbstractCharaAction:
                 Scene.characterBuffer[scriptLine.chara].set_expression(scriptLine.expression)
                 Scene.characterBuffer[scriptLine.chara].say(scriptLine.action, -1)
+
+                print(Scene.lerpWeight)
+
+                Scene.actionDuration = scriptLine.duration
+                Scene.lerpWeightIncrement = 1 / (scriptLine.duration * FPS)
+
+                Scene.characterBuffer[scriptLine.chara].action(scriptLine.action, Scene.lerpWeight)
             case fparser.AbstractCharaLine:
                 Scene.characterBuffer[scriptLine.chara].set_expression(scriptLine.expression)
                 Scene.characterBuffer[scriptLine.chara].say(scriptLine.line, scriptLine.sfxID)
@@ -364,7 +394,16 @@ class Scene():
         if len(Scene.choiceBuffer) != 0:
             for button in Scene.choiceBuffer:
                 button.isClicked()
-    def update():     
+    def update():
+        # CHARA ACTIONS
+        
+        if not Scene.isCharaActionDone:
+            Scene.lerpWeight = Scene.lerpWeight + Scene.lerpWeightIncrement
+        
+        if math.trunc(Scene.lerpWeight) >= 1:
+            Scene.isCharaActionDone = True
+            Scene.lerpWeight = math.trunc(Scene.lerpWeight)
+
         ## AUDIO
         if Scene.currentVoiceline != None:
             if not Scene.voicelineChannel.get_busy():   # Checks if it's busy playing the voiceline or if it's done
@@ -519,6 +558,7 @@ class Chara():
     expression = dict()
     sprite = None
     preParallaxPos = pygame.math.Vector2
+    preActionPos = pygame.math.Vector2
     pos = pygame.math.Vector2
     rect = pygame.Rect
     size = 0.2
@@ -532,6 +572,7 @@ class Chara():
         self.sprite = self.expression[expression]
         self.pos = pygame.math.Vector2(initPos[0], initPos[1])
         self.preParallaxPos = pygame.math.Vector2(initPos[0], initPos[1])
+        self.preActionPos = self.preParallaxPos
         self.set_rect()
         
         charaZBuffer.append(self)        
@@ -569,6 +610,17 @@ class Chara():
     def move(self, dx : float, dy : float):
         self.pos += pygame.Vector2(dx, dy)
         self.rect = round(self.pos.x), round(self.pos.y)
+    
+    def action(self, action : str, weight = Scene.lerpWeight):
+        match action:
+            case "@enter_left":
+                self.set_pos(vector_lerp(self.preActionPos, POSITION["chara1"], weight))
+            case "@enter_right":
+                self.set_pos(vector_lerp(self.preActionPos, POSITION["chara2"], weight))
+            case "@leave_left":
+                self.set_pos(vector_lerp(self.preActionPos, POSITION["out_left"], weight))
+            case "@leave_right":
+                self.set_pos(vector_lerp(self.preActionPos, POSITION["out_right"], weight))
     
     def say(self, phrase : str, sfxID : int):
         # The character that is currently speaking is drawn over everyone else, so, since we read the buffer backwards, we put the speaking character 1st in the list

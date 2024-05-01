@@ -1,10 +1,10 @@
 |0|
 @BG(./Assets/BG/street.png)
-@CHARACTERS(Miku.sans, chara1; Jotaro.normal, chara2)
+@CHARACTERS(Miku.sans, out_left; Jotaro.normal, chara2)
 @MUSIC(Bad Apple!.mp3)
 
 [Miku]
-@enter_left
+@enter_left(1.5)
 "{0}Hello !"
 "{1}I'm the number 1 princess in the world !"
 "{2}Seeeekaaaaaaidee ichiban ooohiiimeee saaamaaaaaaaaaaaaaaaaa !"
@@ -20,7 +20,7 @@
 [Jotaro.reflexion]
 "Yare yare daze."
 "Ore no entiendo nani de qué shaberu !"
-@leave_right
+@leave_right(3)
 @CHOICE("Wait!" : 1A, interest=1, test=2; "Bye !" : 1B)
 
 

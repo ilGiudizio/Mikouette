@@ -39,7 +39,7 @@ class AbstractCG():
 
 class AbstractNarratorLine():
     chara = "Narrator"
-    line = str()
+    line = str
     sfxID = int
     
     def __init__(self, line : str, sfxID : int) -> None:
@@ -47,14 +47,16 @@ class AbstractNarratorLine():
         self.sfxID = sfxID
 
 class AbstractCharaAction():
-    chara = str()
-    expression = str()
-    action = str()
+    chara = str
+    expression = str
+    action = str
+    duration = float
     
-    def __init__(self, chara : str, expression : str, action : str) -> None:
+    def __init__(self, chara : str, expression : str, action : str, duration : float) -> None:
         self.chara = chara
         self.expression = expression
         self.action = action
+        self.duration = duration
 
 class AbstractCharaLine():
     chara = str()
@@ -127,7 +129,7 @@ class Parser():
                         case "@":   # Action
                             tmpLineSplit = tmpLines[li].split("(")  # Skips the first character of the first part
                             tmpLineSplit[0] = tmpLineSplit[0][1:]
-                            if len(tmpLineSplit) !=1 :  # If there's a parenthesis
+                            if tmpLineSplit[0][0].isupper() :  # If it's a Scene Action / Parameter
                                 match tmpLineSplit[0]:
                                     case "BG":
                                         tmpBG = tmpLineSplit[1][:-1]    # Takes everything except for the ) at the end
@@ -176,7 +178,8 @@ class Parser():
                                         
                                         
                             else:   # Appends it to the script if it's a Character Action
-                                tmpSBScript.append(AbstractCharaAction(tmpChara, tmpExpression[tmpChara], "@" + tmpLineSplit[0]))
+                                tmpActionDuration = float(tmpLineSplit[1][:-1])
+                                tmpSBScript.append(AbstractCharaAction(tmpChara, tmpExpression[tmpChara], "@" + tmpLineSplit[0], tmpActionDuration))
                             
                         case "[":   # Character
                             tmpCharaSprite = tmpLines[li][1:-1].split(".")
