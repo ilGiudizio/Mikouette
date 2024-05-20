@@ -98,6 +98,9 @@ class Scene():
     choiceBuffer = []
     vars = {}   # Stores all the variables
     lastCharaDrawnSpeech = pygame.surface.Surface
+    isJojo = False
+    ToBeContinued = pygame.transform.rotozoom(pygame.image.load("./Assets/UI/ToBeContinued.png").convert_alpha(), 0, 0.8)
+    JojoScreenSurface = pygame.surface.Surface
 
     voicelines = {str : [pygame.mixer.Sound]} # Stores all the voicelines of this chapter
     currentVoiceline = None
@@ -207,6 +210,37 @@ class Scene():
         Scene.bg.sprite = pygame.image.load(Scene.data["BG"]).convert()
         Scene.bg.update()
     
+    def jojo():
+        Scene.appreciating = True
+        Scene.isJojo = True
+
+        # Get the pixels
+        scaling_factor = 1
+        screen_surface = pygame.transform.rotozoom(pygame.display.get_surface(), 0, 1/scaling_factor)    # scales it so it can be done in real time
+        pixels = pygame.PixelArray(screen_surface)
+        # Iterate over every pixel                                             
+        for x in range(screen_surface.get_width()):
+            for y in range(screen_surface.get_height()):
+                # Turn the pixel data into an RGB tuple
+                rgb = screen_surface.unmap_rgb(pixels[x][y])
+                # Get a new color object using the RGB tuple and convert to HSLA
+                color = pygame.Color(*rgb)
+                h, s, v, a = color.hsva
+                s = max(0, min(100, int(s) - 20))
+                v = max(0, min(100, int(v) + 10))
+                # Removes 120 to the hue (or however much you want) and wrap to under 360
+                color.hsva = (int(h) - 120) % 360, s, int(v), int(a)
+                # Assign directly to the pixel
+                pixels[x][y] = color
+        # The old way of closing a PixelArray object
+        del pixels
+        Scene.JojoScreenSurface = pygame.transform.rotozoom(screen_surface, 0, scaling_factor)
+
+        pygame.mixer_music.load("./Assets/BGM/Jojo.mp3")
+        pygame.mixer_music.set_volume(0.8)
+        pygame.mixer_music.play(-1)
+        Scene.paused = True
+
     def choice():
         Scene.paused = True
         textBuffer.append(Scene.lastCharaDrawnSpeech)   # Restores the last Chara Speech
@@ -237,6 +271,8 @@ class Scene():
             Scene.unloadCG()
         
         match type(scriptLine):
+            case fparser.AbstractJojo:
+                Scene.jojo()
             case fparser.AbstractCharaAction:
                 Scene.characterBuffer[scriptLine.chara].set_expression(scriptLine.expression)
                 Scene.characterBuffer[scriptLine.chara].say(scriptLine.action, -1)
@@ -395,42 +431,45 @@ class Scene():
             for button in Scene.choiceBuffer:
                 button.isClicked()
     def update():
-        # CHARA ACTIONS
-        
-        if not Scene.isCharaActionDone:
-            Scene.lerpWeight = Scene.lerpWeight + Scene.lerpWeightIncrement
-        
-        if math.trunc(Scene.lerpWeight) >= 1:
-            Scene.isCharaActionDone = True
-            Scene.lerpWeight = math.trunc(Scene.lerpWeight)
+        if not Scene.isJojo:
+            # CHARA ACTIONS
+            
+            if not Scene.isCharaActionDone:
+                Scene.lerpWeight = Scene.lerpWeight + Scene.lerpWeightIncrement
+            
+            if math.trunc(Scene.lerpWeight) >= 1:
+                Scene.isCharaActionDone = True
+                Scene.lerpWeight = math.trunc(Scene.lerpWeight)
 
-        ## AUDIO
-        if Scene.currentVoiceline != None:
-            if not Scene.voicelineChannel.get_busy():   # Checks if it's busy playing the voiceline or if it's done
-                pygame.mixer_music.set_volume(BMG_BASE_VOLUME)  # If it's done, revert the BGM volume
+            ## AUDIO
+            if Scene.currentVoiceline != None:
+                if not Scene.voicelineChannel.get_busy():   # Checks if it's busy playing the voiceline or if it's done
+                    pygame.mixer_music.set_volume(BMG_BASE_VOLUME)  # If it's done, revert the BGM volume
 
-        ## GRAPHICS
-        # The background is always drawn first
-        Scene.bg.update()
-        
-        if Scene.EnableParallax:
-            Scene.parallaxEffect()
+            ## GRAPHICS
+            # The background is always drawn first
+            Scene.bg.update()
+            
+            if Scene.EnableParallax:
+                Scene.parallaxEffect()
 
-        # Then the characters (The first of the list is drawn last)
-        for i in range(len(charaZBuffer)-1, -1, -1):
-            charaZBuffer[i].update()
-            #window.blit(chara.sprite, chara.pos)
-        
-        # Then the CG if there are any
-        if Scene.cg != None:
-            window.blit(Scene.cg, (0, 0))
+            # Then the characters (The first of the list is drawn last)
+            for i in range(len(charaZBuffer)-1, -1, -1):
+                charaZBuffer[i].update()
+                #window.blit(chara.sprite, chara.pos)
+            
+            # Then the CG if there are any
+            if Scene.cg != None:
+                window.blit(Scene.cg, (0, 0))
 
-        # Then the UI
-        if not Scene.paused:
-            Scene.readScript()
-            Scene.previousScriptLineType = type(Scene.scriptBuffer[Scene.script_index])
-        UI.update()
-
+            # Then the UI
+            if not Scene.paused:
+                Scene.readScript()
+                Scene.previousScriptLineType = type(Scene.scriptBuffer[Scene.script_index])
+            UI.update()
+        else:
+            window.blit(Scene.JojoScreenSurface, (0, 0))
+            window.blit(Scene.ToBeContinued, (800, 600))
 class UIBox():
     name = str()
     size = tuple()
@@ -518,7 +557,7 @@ class UI():
                 for button in Scene.choiceBuffer:
                     button.update()
             
-            # If it's showing a CG, hide the CharaTextBox and other graphical elements
+            # If it's showing a CG or Jojo, hide the CharaTextBox and other graphical elements
             if Scene.currentScriptLineType != fparser.AbstractCG:
                 for elt in uiZBuffer:
                     elt.update()

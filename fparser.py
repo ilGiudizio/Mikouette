@@ -37,6 +37,10 @@ class AbstractCG():
     def __init__(self, path : str) -> None:
         self.path = path
 
+
+class AbstractJojo():    
+    pass
+
 class AbstractNarratorLine():
     chara = "Narrator"
     line = str
@@ -131,6 +135,8 @@ class Parser():
                             tmpLineSplit[0] = tmpLineSplit[0][1:]
                             if tmpLineSplit[0][0].isupper() :  # If it's a Scene Action / Parameter
                                 match tmpLineSplit[0]:
+                                    case "JOJO":
+                                        tmpSBScript.append(AbstractJojo())
                                     case "BG":
                                         tmpBG = tmpLineSplit[1][:-1]    # Takes everything except for the ) at the end
                                     case "CG":
