@@ -1,8 +1,10 @@
 {
     "chara1" : [80, 30],
     "chara1b" : [-80, 30],
+    "chara1bump" : [200, 30],
     "chara2" : [660, 30],
     "chara2b" : [840, 30],
+    "chara2dio" : [500, 30],
     "out_left" : [-500, 30],
     "out_right" : [1780, 30]
 }

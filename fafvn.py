@@ -15,7 +15,7 @@ def vector_lerp(a : pygame.math.Vector2, b: pygame.math.Vector2, weight : float)
 FPS = 60
 
 SCREENSIZE = (1280, 720)
-pygame.display.set_caption("Faf VN Framework")
+pygame.display.set_caption("Mikouette")
 window = pygame.display.set_mode(SCREENSIZE)
 SCREEN_RECT = window.get_rect()
 
@@ -97,10 +97,10 @@ class Scene():
     script_index = int()
     choiceBuffer = []
     vars = {}   # Stores all the variables
-    lastCharaDrawnSpeech = pygame.surface.Surface
     isJojo = False
     ToBeContinued = pygame.transform.rotozoom(pygame.image.load("./Assets/UI/ToBeContinued.png").convert_alpha(), 0, 0.8)
     JojoScreenSurface = pygame.surface.Surface
+    lastCharaDrawnSpeech = pygame.surface.Surface
 
     voicelines = {str : [pygame.mixer.Sound]} # Stores all the voicelines of this chapter
     currentVoiceline = None
@@ -215,7 +215,7 @@ class Scene():
         Scene.isJojo = True
 
         # Get the pixels
-        scaling_factor = 1
+        scaling_factor = 3
         screen_surface = pygame.transform.rotozoom(pygame.display.get_surface(), 0, 1/scaling_factor)    # scales it so it can be done in real time
         pixels = pygame.PixelArray(screen_surface)
         # Iterate over every pixel                                             
@@ -240,7 +240,7 @@ class Scene():
         pygame.mixer_music.set_volume(0.8)
         pygame.mixer_music.play(-1)
         Scene.paused = True
-
+    
     def choice():
         Scene.paused = True
         textBuffer.append(Scene.lastCharaDrawnSpeech)   # Restores the last Chara Speech
@@ -275,9 +275,15 @@ class Scene():
                 Scene.jojo()
             case fparser.AbstractCharaAction:
                 Scene.characterBuffer[scriptLine.chara].set_expression(scriptLine.expression)
-                Scene.characterBuffer[scriptLine.chara].say(scriptLine.action, -1)
 
-                print(Scene.lerpWeight)
+                if scriptLine.isUnknown:
+                    Scene.characterBuffer[scriptLine.chara].displayName = "???"
+                else:
+                    Scene.characterBuffer[scriptLine.chara].reveal_name()
+
+                Scene.characterBuffer[scriptLine.chara].say("...", -1)
+
+                #print(Scene.lerpWeight)
 
                 Scene.actionDuration = scriptLine.duration
                 Scene.lerpWeightIncrement = 1 / (scriptLine.duration * FPS)
@@ -285,6 +291,12 @@ class Scene():
                 Scene.characterBuffer[scriptLine.chara].action(scriptLine.action, Scene.lerpWeight)
             case fparser.AbstractCharaLine:
                 Scene.characterBuffer[scriptLine.chara].set_expression(scriptLine.expression)
+
+                if scriptLine.isUnknown:
+                    Scene.characterBuffer[scriptLine.chara].displayName = "???"
+                else:
+                    Scene.characterBuffer[scriptLine.chara].reveal_name()
+                
                 Scene.characterBuffer[scriptLine.chara].say(scriptLine.line, scriptLine.sfxID)
             case fparser.AbstractNarratorLine:
                 Scene.say(scriptLine.line, scriptLine.sfxID)
@@ -400,11 +412,12 @@ class Scene():
         tmpCharacterBuffer = dict()
         
         for chara in abstractCharacters:
-            if chara[0] in previousCharaList:   # If in already exists, take the old one
+            print(type(chara))
+            if chara[0] in previousCharaList:   # If it already exists, take the old one
                 tmpCharacterBuffer[chara[0]] = Scene.characterBuffer[chara[0]]
                 tmpCharacterBuffer[chara[0]].set_expression(chara[1])
                 tmpCharacterBuffer[chara[0]].set_pos(POSITION[chara[2]])
-            else:   # Otherwise, creat a new Chara Object
+            else:   # Otherwise, create a new Chara Object
                 tmpCharacterBuffer[chara[0]] = Chara(chara[0], POSITION[chara[2]], COLOR[chara[0]], chara[1])
             print(f"CHARA {chara[0]}.{chara[1]} loaded")
         
@@ -470,6 +483,7 @@ class Scene():
         else:
             window.blit(Scene.JojoScreenSurface, (0, 0))
             window.blit(Scene.ToBeContinued, (800, 600))
+
 class UIBox():
     name = str()
     size = tuple()
@@ -557,7 +571,7 @@ class UI():
                 for button in Scene.choiceBuffer:
                     button.update()
             
-            # If it's showing a CG or Jojo, hide the CharaTextBox and other graphical elements
+            # If it's showing a CG, hide the CharaTextBox and other graphical elements
             if Scene.currentScriptLineType != fparser.AbstractCG:
                 for elt in uiZBuffer:
                     elt.update()
@@ -593,7 +607,8 @@ class UIElement():
 class Chara():
     count = 0
     charaFolder = "./Assets/Chara/"
-    name = str()
+    name = str
+    displayName = str
     expression = dict()
     sprite = None
     preParallaxPos = pygame.math.Vector2
@@ -606,7 +621,10 @@ class Chara():
     
     def __init__(self, name : str, initPos = (80, 20), color = (255, 255, 255), expression = "normal") -> None:
         self.name = name
-        self.expression = {sprite.split('.')[0].split("_")[1] : pygame.transform.rotozoom(pygame.image.load(f"{self.charaFolder}{name}/Sprites/{sprite}").convert_alpha(), self.rot, self.size) for sprite in os.listdir(f"{self.charaFolder}{name}/Sprites")}
+        self.displayName = name
+        if self.name == "Pucci" or self.name == "Dio" or self.name == "Assistant":
+            self.size = 0.5
+        self.expression = {sprite.split('.')[0][len(name)+1:] : pygame.transform.rotozoom(pygame.image.load(f"{self.charaFolder}{name}/Sprites/{sprite}").convert_alpha(), self.rot, self.size) for sprite in os.listdir(f"{self.charaFolder}{name}/Sprites")}
         self.color = color
         self.sprite = self.expression[expression]
         self.pos = pygame.math.Vector2(initPos[0], initPos[1])
@@ -624,6 +642,7 @@ class Chara():
         window.blit(self.sprite, self.pos)
         #print(f"{self.name} || Pre : {self.preParallaxPos} | Post {self.pos}")
         self.pos = self.preParallaxPos
+        self.preActionPos = self.preParallaxPos
     
     def apply_parallax(self, dx : float, dy : float):
         self.pos = self.preParallaxPos + pygame.Vector2(dx, dy)
@@ -636,6 +655,12 @@ class Chara():
         self.pos = pygame.math.Vector2(x, y)
         self.preParallaxPos = self.pos
         self.set_rect()
+    
+    def set_display_name(self, newName : str):
+        self.displayName = newName
+    
+    def reveal_name(self):
+        self.displayName = self.name
     
     def set_pos(self, pos : tuple):
         self.pos = pygame.math.Vector2(pos[0], pos[1])
@@ -654,19 +679,29 @@ class Chara():
         match action:
             case "@enter_left":
                 self.set_pos(vector_lerp(self.preActionPos, POSITION["chara1"], weight))
+            case "@enter_leftb":
+                self.set_pos(vector_lerp(self.preActionPos, POSITION["chara1b"], weight))
             case "@enter_right":
                 self.set_pos(vector_lerp(self.preActionPos, POSITION["chara2"], weight))
+            case "@enter_rightb":
+                self.set_pos(vector_lerp(self.preActionPos, POSITION["chara2b"], weight))
+            case "@enter_rightdio":
+                self.set_pos(vector_lerp(self.preActionPos, POSITION["chara2dio"], weight))
             case "@leave_left":
                 self.set_pos(vector_lerp(self.preActionPos, POSITION["out_left"], weight))
             case "@leave_right":
                 self.set_pos(vector_lerp(self.preActionPos, POSITION["out_right"], weight))
+            case "@go_chara1":
+                self.set_pos(vector_lerp(self.preActionPos, POSITION["chara1"], weight))
+            case "@go_chara1bump":
+                self.set_pos(vector_lerp(self.preActionPos, POSITION["chara1bump"], weight))
     
     def say(self, phrase : str, sfxID : int):
         # The character that is currently speaking is drawn over everyone else, so, since we read the buffer backwards, we put the speaking character 1st in the list
         charaZBuffer.insert(0, charaZBuffer.pop(charaZBuffer.index(self)))
 
         text_box = TextWrapper.render_text_list(TextWrapper.wrap_text(phrase, SAY_FONT, UI.boxCharaText.size[0]), SAY_FONT, self.color)
-        chara_name = NAME_FONT.render(self.name, True, self.color)
+        chara_name = NAME_FONT.render(self.displayName, True, self.color)
         textBuffer.append((chara_name, UIBox.center(UI.boxCharaName, chara_name)))    # (Surface, Rect)
         textBuffer.append((text_box, (180, 592)))   # (Surface, Rect)
         Scene.lastCharaDrawnSpeech = (text_box, (180, 592))

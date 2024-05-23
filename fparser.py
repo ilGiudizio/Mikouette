@@ -37,12 +37,11 @@ class AbstractCG():
     def __init__(self, path : str) -> None:
         self.path = path
 
-
 class AbstractJojo():    
     pass
 
 class AbstractNarratorLine():
-    chara = "Narrator"
+    chara = "Narrateur"
     line = str
     sfxID = int
     
@@ -55,24 +54,28 @@ class AbstractCharaAction():
     expression = str
     action = str
     duration = float
+    isUnknown = bool
     
-    def __init__(self, chara : str, expression : str, action : str, duration : float) -> None:
+    def __init__(self, chara : str, expression : str, action : str, duration : float, isUnknown = False) -> None:
         self.chara = chara
         self.expression = expression
         self.action = action
         self.duration = duration
+        self.isUnknown = isUnknown
 
 class AbstractCharaLine():
-    chara = str()
-    expression = str()
-    line = str()
+    chara = str
+    expression = str
+    line = str
     sfxID = int
+    isUnknown = bool
     
-    def __init__(self, chara : str, expression : str, line : str, sfxID : int) -> None:
+    def __init__(self, chara : str, expression : str, line : str, sfxID : int, isUnknown = False) -> None:
         self.chara = chara
         self.expression = expression
         self.line = line
         self.sfxID = sfxID
+        self.isUnknown = isUnknown
     
     def __repr__(self) -> str:
         return f"{self.chara} : *{self.expression}* {self.line} // SfxID {self.sfxID}"
@@ -106,6 +109,7 @@ class Parser():
         tmpStoryBlocks = d.split("\n\n\n")
         tmpBG = str   #Stores the latest Background
         tmpChara = str    # Stores the current Character Name
+        tmpIsCharaUnknown = False
         tmpExpression = dict()  # Stores each Character's latest expression
         tmpMusic = None
         
@@ -185,14 +189,20 @@ class Parser():
                                         
                             else:   # Appends it to the script if it's a Character Action
                                 tmpActionDuration = float(tmpLineSplit[1][:-1])
-                                tmpSBScript.append(AbstractCharaAction(tmpChara, tmpExpression[tmpChara], "@" + tmpLineSplit[0], tmpActionDuration))
+                                tmpSBScript.append(AbstractCharaAction(tmpChara, tmpExpression[tmpChara], "@" + tmpLineSplit[0], tmpActionDuration, tmpIsCharaUnknown))
                             
                         case "[":   # Character
                             tmpCharaSprite = tmpLines[li][1:-1].split(".")
                             if len(tmpCharaSprite) > 1: # aka if you change expression
                                 tmpChara = tmpCharaSprite[0]
                                 tmpExpression[tmpCharaSprite[0]] = tmpCharaSprite[1]    # updates the expression
-                            tmpChara = tmpCharaSprite[0]
+
+                            if tmpCharaSprite[0][0] == "?":
+                                tmpChara = tmpCharaSprite[0][1:]
+                                tmpIsCharaUnknown = True
+                            else:
+                                tmpChara = tmpCharaSprite[0]
+                                tmpIsCharaUnknown = False
                             
                         case "\"":  # Speech Line
                             if tmpChara[0] == "$":  # In case it's the Narrator
@@ -202,7 +212,7 @@ class Parser():
                                     tmpLineSfx = tmpLines[li][2:-1].split("}")
                                     tmpSfxID = int(tmpLineSfx[0])
                                     tmpNarratorLine = tmpLineSfx[1]
-                                tmpSBScript.append(AbstractNarratorLine(tmpNarratorLine, tmpSfxID)) # tmpLines[li][1:-1] because the Narrator doesn't speak with ""
+                                tmpSBScript.append(AbstractNarratorLine(tmpNarratorLine[1:-1], tmpSfxID)) # tmpLines[li][1:-1] because the Narrator doesn't speak with ""
                             else:
                                 tmpSfxID = -1   # The line won't have a sound associated to it
                                 tmpCharaLine = tmpLines[li]
@@ -210,7 +220,7 @@ class Parser():
                                     tmpCharaLineSfx = tmpLines[li][2:].split("}")
                                     tmpSfxID = int(tmpCharaLineSfx[0])
                                     tmpCharaLine = "\""+tmpCharaLineSfx[1]  # Restores the quotes, gone because of the split
-                                tmpSBScript.append(AbstractCharaLine(tmpChara, tmpExpression[tmpChara], tmpCharaLine, tmpSfxID))
+                                tmpSBScript.append(AbstractCharaLine(tmpChara, tmpExpression[tmpChara], tmpCharaLine, tmpSfxID, tmpIsCharaUnknown))
                         case "#":   # Comment
                             continue
             

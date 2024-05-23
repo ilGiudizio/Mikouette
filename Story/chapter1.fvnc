@@ -1,63 +1,607 @@
 |0|
-@BG(./Assets/BG/street.png)
-@CHARACTERS(Miku.sans, out_left; Jotaro.normal, chara2)
-@MUSIC(Bad Apple!.mp3)
+@BG(./Assets/BG/BG_japon.png)
+@CHARACTERS(Miku.triste, out_left; Assistant.normal, out_right; Kak.normal_silhouette, out_right)
+@MUSIC(Tension - Persona 5.mp3)
+
+[$]
+"Quelque part au Japon"
 
 [Miku]
 @enter_left(1.5)
-"{0}Hello !"
-"{1}I'm the number 1 princess in the world !"
-"{2}Seeeekaaaaaaidee ichiban ooohiiimeee saaamaaaaaaaaaaaaaaaaa !"
+"C’est la catas, le concert ne sera jamais prêt à temps !!"
+
+[Assistant]
+"Miku dépêche toi de te changer tu vas pas y aller comme ça !"
+
+[Miku]
+"J'y vais tout de suite !"
+
+[?Kak]
+@go_chara1(2)
+@go_chara1bump(0.5)
 
 [$]
-"Hello, chien (eh mais c'est pas très gentil ça Diane)"
+"*bump*"
 
-@CG(./Assets/CG/TestCG1.png)
-# $ = Narrator
-[$]
-"{0}Ah ouais stylé Persona 5"
+[Miku.triste_sans]
+"Désolée !"
 
-[Jotaro.reflexion]
-"Yare yare daze."
-"Ore no entiendo nani de qué shaberu !"
+[?Kak]
+"Pas de problème"
+@leave_left(1)
+
+[Miku]
 @leave_right(3)
-@CHOICE("Wait!" : 1A, interest=1, test=2; "Bye !" : 1B)
+@GOTO(1, fade)
 
 
-|1A|
-# he's out of frame
-[Jotaro]
-"Follow me then."
+|1|
+#Ceci est un test
+@BG(./Assets/BG/BG_loges.png)
+@CHARACTERS(Miku.surprise_sans, chara1)
+@MUSIC(loges.mp3)
 
 [Miku]
-"Sure thing !"
-@GOTO(2, fade)
+"C’est bizarre j’ai l'impression d’avoir la tête plus légère d’un coup."
+"Pourquoi j’ai l’impression que quelque chose a changé ?"
+"..."
 
-
-|1B|
-@MUSIC(Divide My Heart - GGXrd.mp3)
-[Miku]
-"Oh... He might be able to help me. Huuuhhh.. Hey, wait !"
-
-[Jotaro]
-"Yare yare daze..."
+[Miku.sans]
+"MES COUETTES !?"
+"Comment je vais faire, sans mes couettes je ne pourrai pas assurer le concert ! Il faut que je trouve une solution et vite !"
 @GOTO(2, fade)
 
 
 |2|
-@BG(./Assets/BG/house.png)
-@CHARACTERS(Miku.normal, chara1; Jotaro.normal, chara2; Kak.normal, chara2b)
+@BG(./Assets/BG/BG_japon.png)
+@CHARACTERS(Miku.sans, chara1; Assistant.normal, out_right)
 
-[Jotaro]
-@MUSIC(STOP)
-"{0}Well, here we are."
+[Assistant]
+@enter_right(0.5)
+"Miku ! Mais qu’est-ce que tu fais sans tes couettes ni ta tenue ?"
+"Ça va bientôt commencer et tu es dans un état pire qu’avant."
 
-[Kak]
-"Jotaro, you brought someone with you ?"
+[Miku.triste_sans]
+"Je suis vraiment désolée, je vais essayer de les retrouver le plus vite possible !"
+"Mais je ne sais absolument pas où est-ce que je les ai perdues, c’est une catastrophe."
+
+[Assistant]
+"Je vais essayer de demander au staff s'ils ont vu tes couettes, retourne en loges et habille toi en attendant."
+@leave_right(0.5)
+@GOTO(3, fade)
+
+
+|3|
+@BG(./Assets/BG/BG_loges.png)
+@CHARACTERS(Miku.reflexion_sans, chara1)
+@MUSIC(loges.mp3)
 
 [Miku]
-"yo"
+"Qu’est-ce que je fais ?
+Je suis un vrai désastre. Il faut que j’aille dans un endroit calme, j’étouffe ici."
+@CHOICE("Aller prier" : 4A; "Prendre l'air" : 4B)
+
+
+|4A|
+# Miku choisis d'aller prier
+@BG(./Assets/BG/BG_loges.png)
+@CHARACTERS(Miku.surprise_sans, chara1)
+
+[Miku]
+"La cathédrale est toujours un endroit calme, je pourrai peut-être aller déposer une prière là-bas."
+@GOTO(5A, fade)
+
+
+|4B|
+# Elle décide d'aller à la plage
+@BG(./Assets/BG/BG_loges.png)
+@CHARACTERS(Miku.surprise_sans, chara1)
+
+[Miku]
+"La plage est toujours calme a cette heure-ci, peut être que le bruit des vagues saura m'apaiser."
+@GOTO(8, fade)
+
+
+|5A|
+# Elle entre dans la cathédrale
+@BG(./Assets/BG/BG_cathedrale.png)
+@CHARACTERS(Miku.normale_sans, chara1)
+@MUSIC(cathedrale.mp3)
+
+[Miku]
+"Je savais bien que ce serait calme."
+"Rien de mieux que les cathédrales  en pleine nuit pour être au calme, loin de tout, et surtout seule et sans personne."
+"..."
+"On est bien ici dis donc."
+"Je suis sûre que si quelqu’un devait me tuer ici personne m’entendrait crier"
+"Haha."
+"Bon je vais aller me confesser, ce serait dommage de se faire planter devant Jésus."
+@GOTO(6A, fade)
+
+
+|6A|
+# Elle va se confesser et rencontre Pucci et Dio
+@BG(./Assets/BG/BG_cathedrale.png)
+@CHARACTERS(Miku.normale_sans, chara1; Pucci.normal, out_right; Dio.normal, out_right)
+
+[Miku]
+"Bonsoir mon père."
+"Je suis ici parce que j'ai été une fille horrible."
+"Après qu’on m’ait volé mes couettes j’ai souhaité que mon voleur se soit fait renverser par une voiture en chemin."
+
+[Miku.rougis_sans]
+"Puis manger par des rats qui se feront écraser par des vélos."
+"Pour qu’enfin sa dépouille soit souillée par des chaussures remplies de caca de chat."
+"..."
+
+[Miku.normale_sans]
+"J’ai l’impression que je n’arrive pas à me défaire de mon passé de Yakuza."
+"C’est vrai que passer de cheffe du gang la plus influente à idole la plus reconnue c’est pas rien."
+"Mais j’essaie tous les jours, mon père."
+"Tous les jours je suis tentée mais je ne faiblis jamais."
+
+[?Pucci]
+@enter_right(2)
+"Je n’imagine même pas à quel point cela doit être dur ma pauvre enfant."
+"Mais ne vous inquiétez pas, le seigneur vous pardonne."
+
+[Miku.sans]
+"MON PÈRE VOUS ÊTES LÀ ?!"
+
+[?Pucci]
+"Bien sûr que je suis là, qu’est-ce que c’est que cette question."
+"Après tout, le seigneur est parmi nous."
+"..."
+"Votre situation est bien déplorable."
+"À quel point étaient ces couettes importantes ?"
+
+[Miku.normale_sans]
+"Elles sont à l’origine même de toute ma puissance."
+"Ce sont des reliques des anciens temps que ma famille se passe de générations en générations."
+"Sans elles, je ne suis qu’une simple chanteuse."
+
+[?Pucci]
+"Serait-il possible que le pêcheur acquiert votre puissance avec cette relique ?"
+"Cela serait dommage qu’un objet aussi puissant se retrouve entre les mauvaises mains."
+
+[Miku]
+"C’est bien de ça dont j’ai peur."
+"Qu’il s’en serve à des fins mauvaises."
+
+[?Pucci]
+"Et si je te disais que je connais quelqu'un qui pourrait t'aider à retrouver ces reliques ?"
+
+[Miku]
+"Vous connaissez quelqu'un comme ça ?!"
+"Qui est-il, dites-le moi je vous en supplie."
+
+[?Dio]
+@enter_rightdio(0.8)
+
+[Dio.reveal]
+"{0}C'est moi, DIO !"
+"Tes artefacts m'intéressent grandement."
+"Je suis prêt à te venir en aide."
+
+[Miku]
+"C’est très gentil de votre part, mais je me demande bien comment vous pourriez m’être utile."
+
+[Dio]
+"C’est vrai que je ne me suis pas présenté."
+"{0}Encore une fois, Je suis DIO !"
+"L’être le plus puissant que cette terre ait connu."
+"Je suis bien au-dessus des êtres humains."
+"Et je suis prêt à te prêter ma force et mon réseau de disciples."
+"Mais en échange, je veux ta force et ta loyauté."
+
+[Miku]
+"Je ne sais pas si je suis prête à accepter."
+"Je ne connais aucun de vous deux."
+"Et je ne sais pas si ça pourrait vraiment m’être bénéfique."
+
+[Pucci.reveal]
+"Pensez-y chère enfant."
+"Un être sublime comme lui pourrait vous être utile."
+"Vous ne connaissez pas la vraie nature de votre ravisseur."
+
+[Miku]
+"Je doute qu'il soit quelqu'un de particulièrement puissant ou menaçant."
+"C'est sûrement juste un voleur mal qui ne sait pas ce qu'il a entre les mains."
+"..."
+"Mais c'est vrai qu’à part son apparence, je ne sais pas grand chose."
+"Peut être qu'il savait ce qu'il faisait."
+"Hmmm..."
+@CHOICE("Accepter" : 7A, evil=1; "Refuser" : 7B)
+
+
+|7A|
+# Elle accepte et discute un peu avec Dio et Pucci avant d'aller à la plage
+@BG(./Assets/BG/BG_cathedrale.png)
+@CHARACTERS(Miku.normale_sans, chara1; Pucci.reveal, chara2; Dio.reveal, chara2dio)
+
+[Miku]
+"J'accepte."
+"Je vous offre ma loyauté."
+"J’espère que vous ne me le ferez pas regretter."
+
+@CG(./Assets/CG/cg_miku_et_dio.png)
+
+[Dio]
+"Ne vous inquiétez pas."
+"Je retrouverai tes couettes."
+
+[Pucci]
+"Que le seigneur soit avec vous."
+"Maintenant, partez, mon enfant."
+"Partez éradiquer le péché de cette terre."
+
+[$]
+"Miku se diriger vers la plage, guidée par l'instinct... et peut-être un peu de foi."
+@GOTO(4B, fade)
+
+
+|7B|
+# Elle refuse puis se dirige vers la plage
+@BG(./Assets/BG/BG_cathedrale.png)
+@CHARACTERS(Miku.normale_sans, chara1; Pucci.normal, chara2; Dio.normal, chara2dio)
+
+[Miku]
+"C'est vraiment généreux de votre part."
+"Mais je ne pense pas accepter."
+"Je ne doute pas de votre puissance, ni de vos capacités."
+"Cependant, c'est une affaire que je préfère résoudre personnellement."
+
+[Dio]
+"Très bien. Je comprends."
+"Mais rappelez-vous que mon offre tient toujours."
+"Je ne sais pas où vous vous rendez. Cependant,"
+"soyez certaine que je saurai vous trouver si vous faites appel à moi."
+
+[Miku]
+"Je n'en doute pas."
+
+[Pucci]
+"Que le seigneur soit avec vous, et vous protège dans votre quête."
+@GOTO(8, fade)
+
+
+|8|
+# Elle arrive à la plage et entre dans une grotte
+@BG(./Assets/BG/BG_plage.png)
+@CHARACTERS(Miku.normale_sans, chara1)
+@MUSIC(plage.wav)
+
+[Miku]
+"Je savais bien qu’il n’y aurait personne."
+"La mer est magnifique ce soir, on peut entendre la foule depuis ici."
+"..."
+
+[Miku.surprise_sans]
+"Tiens, j’avais jamais remarqué qu’il y avait une grotte."
+@GOTO(9, fade)
+
+
+|9|
+# Elle parle à un vieux
+@BG(./Assets/BG/BG_grotte.png)
+@CHARACTERS(Miku.normale_sans, chara1; Vieux.normal, chara2)
+@MUSIC(grotte.mp3)
+
+[Vieux]
+"Viens mon enfant, approche donc."
+
+[Miku.surprise_sans]
+"Euh, bonsoir, désolée on m’attend pas loin, je vais y aller."
+
+[Vieux]
+"N’ai pas peur, je ne te veux aucun mal au contraire !"
+"Je ne souhaite que purifier le mal qui te ronge."
+
+[Miku.rougis_sans]
+"C’est vraiment très gentil mais je suis vraiment pas intéressée, bonne soirée à vous."
+
+[Vieux]
+"Attends j’ai dit ! Je sais que la perte de tes couettes te peine énormément."
+"Accepte l’aide d’un vieil homme comme moi."
+"Prends ce glaive et pars abattre l’origine de ton malheur."
+
+[Miku.normale_sans]
+"C’est vraiment aimable mais je sais pas si je suis prête à aller en prison pour une simple histoire de vol."
+
+[Vieux]
+"Même si je te révélais l’emplacement de ton offenseur ?"
+
+[Miku.sans]
+"Vous savez où il est ?!"
+
+[Vieux]
+"Approche. Donne-moi tes mains."
+
+[Miku.normale_sans]
+"..."
+
+@CG(./Assets/CG/cg_handreading.png)
+
+[Vieux]
+"Mmmmh…"
+"Je vois.. que je ne vois pas grand-chose, j’ai du perdre mes lunettes quelque part."
+"Je vois cependant qu’il est parti loin, je dirai même qu’il a quitté les frontières de ce pays."
+"Mais il est agité, il a peur."
+"Tu peux encore le rattraper avant qu’il ne soit trop tard."
+
+[Miku]
+"Où est-ce qu’il est alors ?"
+
+[Vieux]
+"Sors. Va et attends l’arrivée du soleil, lui saura mieux te guider."
+"Tu n’auras qu’à suivre sa direction, jusqu’à atteindre l’endroit où il y règne en maître."
+"Une contrée avec plein de sable chaud, des trucs qui piquent et des fennec, beaucoup de fennecs."
+"Et des scorpions aussi."
+
+[Miku]
+"D’accord, donc je vais en Egypte c’est ça ?"
+
+[Vieux]
+"C’est cela oui."
+"Mais n’attends pas trop, un compagnon est déjà dehors."
+"Que les étoiles t'apportent sécurité et courage !"
+
+[Miku]
+"Très bien. Merci beaucoup, vieil homme."
+
+[Vieux]
+"Tu es sûre de ne pas vouloir de mon épée ?"
+
+[Miku]
+"Je vais y aller je pense."
+@GOTO(10, fade)
+
+
+|10|
+# Elle sort de la grotte et reçoit un coup de fil, puis rencontre Jotaro
+@BG(./Assets/BG/BG_plage.png)
+@CHARACTERS(Miku.normale_sans, chara1; Assistant.normal, out_right; Jotaro.pascontent, out_right)
+@MUSIC(plage.wav)
+
+[Miku]
+"Bizarre comme vieil homme"
+
+[$]
+"*Brrr Brrr Brrr*"
+
+[Miku]
+"Allô ?"
+
+[Assistant]
+@enter_right(0.5)
+"Miku ? Où est-ce que tu es ?"
+"Apparemment c’est un membre du staff qui aurait tes couettes"
+"mais personne ne sait où il pourrait être."
+"Les gens à qui j’ai demandé m’ont juste dit qu’ils avaient croisé un homme grand"
+"et avec des cheveux roses, tes couettes dans les mains."
+"Je me rappelle pas avoir déjà vu un gars comme ça, c’est peut-être un stagiaire."
+"On est en train d’essayer de le retrouver mais avec toute l’agitation ça va être compliqué, reviens vite."
+
+[Miku]
+"Cheveux roses tu dis ? Ça me dit quelque chose."
+"Je pense pas revenir avant un petit moment."
+
+[Assistant]
+"Miku qu’est-ce que-"
+
+[$]
+"*Biiip*"
+
+[Assistant]
+@leave_right(0.5)
+
+[$]
+"*Scrunch scrunch scrunch*"
+
+[Miku]
+"Mais qu'est-ce que ?"
+
+@CG(./Assets/CG/cg_jotaro_eating_starfishes.png)
 
 [Jotaro]
-"Yeah."
-@CHAPTER(chapter2, 0, fade)
+@enter_right(0.1)
+"QUI VA LA ?!"
+
+[Miku]
+"Je ne fais que passer par là !"
+
+[Jotaro.normal]
+"Vous n'avez rien à voir ici. Allez vous-en."
+@CHOICE("S'énerver" : 11A; "Rester calme" : 11B)
+
+
+|11A|
+# Miku perd son sang froid
+@BG(./Assets/BG/BG_plage.png)
+@CHARACTERS(Miku.colere_sans, chara1; Jotaro.normal, chara2)
+
+[Miku]
+"Toi va-t-en."
+"Tu pues en plus à bouffer des étoiles de mer."
+
+[Jotaro.pascontent]
+"C’est pas une petite demoiselle chauve qui va me dire quoi que ce soit."
+"Je vous ai entendu dans la grotte toi et le vieux."
+"Tu devrais éviter de traîner avec des gars aussi louche."
+"Kak s'abaisserait jamais à voler une fillette sans défense."
+
+[Miku]
+"Ferme-la sale mangeur d’étoiles de mer."
+"Tout ce que je sais c’est que ton copain m’a volé quelque chose d’important et précieux."
+
+[Jotaro.normal]
+"Ce sont juste des couettes, qu’est-ce qu’elles ont de si importants ?"
+"Tu t’achètes une perruque et tu t’en refais de nouvelles."
+
+[Miku]
+"C’est plus que ça. Ce sont mes instruments."
+"C’est d’elles que je tire toute ma force et ma volonté de faire sourire mon public."
+
+[Jotaro.pascontent]
+"Tu te crois importante ?"
+
+[Jotaro.content]
+"Tu es aussi remplaçable que tes couettes, arrête de faire la diva."
+"Dans 10 ans ont t’aura déjà oubliée."
+@CHOICE("La violence" : 11A1; "La raison" : 11A2)
+
+
+|11A1|
+# Miku tabasse Jotaro
+@BG(./Assets/BG/BG_plage.png)
+@CHARACTERS(Miku.colere_sans, chara1; Jotaro.normal, chara2)
+@MUSIC(Jojo_loop.mp3)
+
+[$]
+"*punch*"
+
+[Jotaro.pascontent]
+"OUCH"
+"Ça va pas la tête ?!"
+
+[$]
+"*punch*"
+"Arrêteuh"
+"Je vais le dire à ma maman !"
+
+[Miku]
+"Chiale."
+"Et tu vas venir avec moi jusqu’en Egypte."
+
+[Jotaro.content]
+"Je viendrai jamais avec toi."
+
+@CG(./Assets/CG/cg_miku_allmight.png)
+
+[Miku]
+"Je vais te briser les rotules."
+
+[Jotaro.pascontent]
+"D’accord je viens avec toi."
+
+[Jotaro.normal]
+"Mais mon coeur sait très bien que Kak n’est pas un voleur."
+@JOJO
+
+
+|11A2|
+# Miku convainc Jotaro
+@BG(./Assets/BG/BG_plage.png)
+@CHARACTERS(Miku.colere_sans, chara1; Jotaro.normal, chara2)
+@MUSIC(Jojo_loop.mp3)
+
+[Miku.normale_sans]
+"Peut-être qu'il veut faire quelque chose de particulier avec mes couettes."
+"Tu penses pas que ton pote aurait un plan secret ou quelque chose du genre ?"
+
+[Jotaro.reflexion]
+"C’est vrai qu'il avait des lubies un peu bizarres."
+
+[Miku]
+"Peut-être que ça en faisait partie."
+"Si ça se trouve il aime un peu trop les cheveux."
+
+[Jotaro.normal]
+"Je pense pas. Les cheveux ça fait pas partie de la liste."
+"Mais c'est vrai qu'il aime beaucoup les idoles."
+
+[Miku]
+"Et tu penses pas qu'il les aimait un peu trop ?"
+"Au point de vouloir voler quelque chose de précieux ?"
+
+[Jotaro]
+"..."
+"J'espère pas."
+
+[Miku]
+"T'aurais une idée de pourquoi il serait allé en Égypte ?"
+
+[Jotaro]
+"J'en ai aucune idée mais je compte bien aller lui demander en personne."
+"Si j'ai bien compris, tu comptes aussi y aller. Je te suis."
+"J'ai besoin de savoir pourquoi il s'est mis dans ce merdier."
+
+[Miku]
+"D'accord. Mais j'ai aucune idée de comment on va pouvoir aller en Égypte."
+
+[Jotaro.reflexion]
+"Je pense savoir. Mais avant, il faut qu'on aille rendre visite à un ami en Inde."
+"Il saura mieux nous éclairer."
+
+@JOJO()
+
+
+|11B|
+# Miku reste calme
+@BG(./Assets/BG/BG_plage.png)
+@CHARACTERS(Miku.normale_sans, chara1; Jotaro.normal, chara2)
+@MUSIC(STOP)
+
+[Miku]
+"De toute façon c’est pas un mangeur d’étoiles de mers dont je suis à la recherche."
+
+[Jotaro]
+"Le mangeur d’étoiles de mer il te dit de dégager."
+
+[Miku]
+"C’est bon j’ai compris, je m’en vais."
+"Vous connaîtriez pas un homme aux cheveux roses par hasard ?"
+"Les gens bizarres comme vous, y’en a pas des millions."
+
+[Jotaro]
+"Tu lui veux quoi ?"
+
+[Miku]
+"Pas grand chose, je veux juste récupérer ce qu'il m’a volé."
+
+[Jotaro]
+"Il ferait jamais ça. Kak c’est pas un gars comme ça."
+
+[Miku]
+"Pourtant j’ai 5kg de cheveux en moins."
+"Et je suis sûre que c’est de la même personne dont on parle."
+
+[Jotaro.content]
+"Et bah peut être que tu confonds."
+
+[Miku]
+"Et moi je suis sûre que non."
+"Des hommes aux cheveux roses ça court pas les rues."
+"Et surtout que sur les caméras de sécurité"
+"il avait un badge avec écrit son prénom en gros et en gras."
+
+[Jotaro.pascontent]
+"Elle commence à m'emmerder la chauve."
+
+[Miku.colere_sans]
+"Pardon ?!"
+"C'est à cause de ton pote que j'ai plus de cheveux."
+@CHOICE("La violence" : 11B1; "La sagesse" : 11B2)
+
+
+|11B1|
+# Miku tabasse Jotaro
+@BG(./Assets/BG/BG_plage.png)
+@CHARACTERS(Miku.colere_sans, chara1; Jotaro.normal, chara2)
+
+[Miku]
+"De toute façon c’est pas la peine de raisonner avec les roublards dans ton genre."
+@GOTO(11A1, fade)
+
+
+|11B2|
+# Miku convainc Jotaro
+@BG(./Assets/BG/BG_plage.png)
+@CHARACTERS(Miku.colere_sans, chara1; Jotaro.pascontent, chara2)
+
+[Miku]
+"Et je suis vraiment VRAIMENT certaine que c'était lui."
+
+[Jotaro]
+"... Et moi non."
+@GOTO(11A2, fade)
